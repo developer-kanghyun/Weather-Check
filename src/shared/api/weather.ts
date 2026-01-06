@@ -1,4 +1,4 @@
-import { requestJson } from './base';
+import { requestJson } from '@/shared/api/base';
 
 const BASE_URL = 'https://api.openweathermap.org';
 
