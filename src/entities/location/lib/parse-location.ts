@@ -8,5 +8,6 @@ export function parseRawLocation(raw: string): Location {
     parts,
     depth: parts.length,
     displayLabel: parts.join(' '),
+    originalName: raw, // 전체 주소를 보관
   };
 }
