@@ -9,7 +9,7 @@ import type { Favorite } from '@/entities/favorite';
 
 function HomePage() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const { weather, coords, isLoading, isError, noData } = useLocationWeather(selectedLocation);
+  const { weather, position, isLoading, isError, noData } = useLocationWeather(selectedLocation);
   const { favorites, add, remove, update } = useFavorites();
   const { weatherByLocationId } = useFavoritesWeather(favorites);
 
@@ -24,7 +24,7 @@ function HomePage() {
     : false;
 
   const handleToggleFavorite = () => {
-    if (!selectedLocation || !coords) return;
+    if (!selectedLocation || !position) return;
     
     if (isFavorite) {
       handleRemoveFavorite(selectedLocation.id);
@@ -33,8 +33,8 @@ function HomePage() {
         id: selectedLocation.id,
         name: selectedLocation.displayLabel,
         originalName: selectedLocation.originalName || selectedLocation.displayLabel,
-        lat: coords.lat,
-        lon: coords.lon,
+        lat: position.lat,
+        lon: position.lon,
       });
       if (!result.success) {
         alert(result.error);

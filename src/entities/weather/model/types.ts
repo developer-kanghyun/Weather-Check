@@ -17,7 +17,7 @@ export interface NormalizedWeather {
   }>;
 }
 
-export interface Coords {
+export interface Position {
   lat: number;
   lon: number;
 }
