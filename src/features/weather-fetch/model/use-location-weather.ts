@@ -3,17 +3,21 @@ import { geocodeDirect, fetchOneCall } from '@/shared/api/weather';
 import { normalizeOneCall, type NormalizedWeather, type Coords } from '@/entities/weather';
 import type { Location } from '@/entities/location';
 
-export function useWeatherByLocation(location: Location | null) {
+export function useLocationWeather(location: Location | null) {
   const geocodeQuery = useQuery({
     queryKey: ['geocode', location?.displayLabel],
     queryFn: async () => {
       if (!location) return null;
+      // 이미 위치정보가 있다면 지오코딩 생략 (이름 변경 시에도 날씨 데이터 유지)
+      if (location.position) return location.position as Coords;
+      
       const results = await geocodeDirect({ q: `${location.displayLabel},KR`, limit: 1 });
       if (!results.length) return null;
       return { lat: results[0].lat, lon: results[0].lon } as Coords;
     },
     enabled: !!location,
-    staleTime: 1000 * 60 * 60,
+    // 좌표는 변경이 거의 없으므로 무한 캐시 (불필요한 지오코딩 API 호출 방지)
+    staleTime: Infinity,
   });
 
   const coords = geocodeQuery.data;
