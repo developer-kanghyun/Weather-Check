@@ -1,1 +1,1 @@
-export { useFavorites } from './model/use-favorites';
+export { useFavorites, FavoritesProvider } from './model/use-favorites.tsx';
