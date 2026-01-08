@@ -11,9 +11,8 @@ interface MainWeatherProps {
 
 export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherProps) {
   const { weather, position, isLoading, isError, noData } = useLocationWeather(selectedLocation);
-  
-  // props 대신 즐겨찾기에서 이름을 가져옴(실시간 동기화)
   const { favorites } = useFavorites();
+  
   const favorite = selectedLocation ? favorites.find(f => f.id === selectedLocation.id) : null;
   const displayName = favorite ? favorite.name : (selectedLocation?.displayLabel || '');
   const originalName = favorite ? favorite.originalName : (selectedLocation?.originalName || selectedLocation?.displayLabel);
@@ -37,7 +36,7 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
 
         {isLoading && (
           <div className="text-center animate-pulse">
-            <span className="material-symbols-outlined text-5xl text-slate-500 mb-2">cloud_sync</span>
+            <span className="material-symbols-outlined text-5xl text-slate-500 mb-2">cloud</span>
             <p className="text-lg text-slate-500">날씨 정보를 불러오는 중...</p>
           </div>
         )}

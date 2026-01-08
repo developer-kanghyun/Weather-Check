@@ -5,7 +5,7 @@ export interface WeatherTheme {
   gradientOverlay: string;
 }
 
-export const WEATHER_THEMES: Record<WeatherStatus, WeatherTheme> = {
+export const weatherThemes: Record<WeatherStatus, WeatherTheme> = {
   Clear: {
     backgroundImage: 'https://images.unsplash.com/photo-1601297183305-6df142704ea2?q=80&w=2000&auto=format&fit=crop',
     gradientOverlay: 'from-sky-100/30 via-white/20 to-transparent',
