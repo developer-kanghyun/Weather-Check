@@ -1,0 +1,1 @@
+export { useFavoritesWeather } from './model/use-favorites-weather';
