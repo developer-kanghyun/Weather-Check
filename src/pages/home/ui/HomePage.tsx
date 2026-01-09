@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Location } from '@/entities/location';
+import { type Location, createLocation } from '@/entities/location';
 import { FavoritesSidebar } from '@/widgets/favorites-sidebar';
 import { MainWeather } from '@/widgets/main-weather';
 import { useLocationWeather } from '@/features/weather-fetch';
@@ -36,14 +36,12 @@ export function HomePage() {
           console.error('역지오코딩 실패:', error);
         }
 
-        setSelectedLocation({
+        setSelectedLocation(createLocation({
           id: 'current-location',
-          displayLabel: currentAddress,
-          originalName: currentAddress,
           parts: [currentAddress],
-          depth: 0,
+          originalName: currentAddress,
           position: { lat: currentPosition.lat, lon: currentPosition.lon },
-        });
+        }));
         setHasInitialLocation(true);
       }
     }
