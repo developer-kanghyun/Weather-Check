@@ -27,6 +27,7 @@ export type GeocodingResult = {
   lon: number;
   country: string;
   state?: string;
+  local_names?: Record<string, string>;
 };
 
 export type OneCallWeatherResponse = {
@@ -73,15 +74,30 @@ export async function geocodeDirect(params: {
   return callWeatherApi<GeocodingResult[]>('/geo/1.0/direct', { q, limit }, signal);
 }
 
+export async function reverseGeocode(params: {
+  lat: number;
+  lon: number;
+  limit?: number;
+  signal?: AbortSignal;
+}) {
+  const { lat, lon, limit = 1, signal } = params;
+  return callWeatherApi<GeocodingResult[]>('/geo/1.0/reverse', { lat, lon, limit }, signal);
+}
+
 export async function fetchOneCall(params: {
   lat: number;
   lon: number;
   units?: 'standard' | 'metric' | 'imperial';
   lang?: string;
+  exclude?: string;
   signal?: AbortSignal;
 }) {
-  const { lat, lon, units = 'metric', lang = 'ko', signal } = params;
-  return callWeatherApi<OneCallWeatherResponse>('/data/3.0/onecall', { lat, lon, units, lang }, signal);
+  const { lat, lon, units = 'metric', lang = 'kr', exclude, signal } = params;
+  return callWeatherApi<OneCallWeatherResponse>(
+    '/data/3.0/onecall',
+    { lat, lon, units, lang, exclude: exclude || '' },
+    signal
+  );
 }
 
 function buildCandidates(locationName: string): string[] {
