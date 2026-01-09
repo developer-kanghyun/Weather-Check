@@ -38,6 +38,10 @@ export type OneCallWeatherResponse = {
   current?: {
     dt: number;
     temp: number;
+    humidity?: number;
+    wind_speed?: number;
+    uvi?: number;
+    visibility?: number;
     weather?: Array<{ main: string; description: string; icon: string }>;
   };
   hourly?: Array<{

@@ -3,7 +3,7 @@ import { useLocationWeather } from '@/features/weather-fetch';
 import { FavoriteToggle } from '@/features/favorite-toggle';
 import { useFavorites } from '@/features/favorite-manage';
 import type { Location } from '@/entities/location';
-import { localizeWeather } from '@/shared/lib/weather-theme';
+import { formatWeatherDescription, formatTemperature } from '@/entities/weather/lib/weather-format';
 
 interface MainWeatherProps {
   selectedLocation: Location | null;
@@ -83,7 +83,7 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
               )}
               
               <div className="flex items-center gap-4">
-                <span className="text-7xl font-black text-[#111618] dark:text-white">{Math.round(weather.current.temp)}°</span>
+                <span className="text-7xl font-black text-[#111618] dark:text-white">{formatTemperature(weather.current.temp)}</span>
                 <span className="material-symbols-outlined text-7xl text-blue-500">
                    {weather.current.main === 'Clear' ? 'wb_sunny' : 
                     weather.current.main === 'Clouds' ? 'cloud' : 
@@ -92,13 +92,13 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
               </div>
               
               <p className="text-xl font-bold text-slate-700 dark:text-slate-200 capitalize">
-                {localizeWeather(weather.current.description || weather.current.main)}
+                {formatWeatherDescription(weather.current.main, weather.current.description)}
               </p>
               
               <div className="mt-4 flex gap-6 text-sm font-semibold text-slate-500 bg-black/5 px-6 py-2 rounded-full">
-                <span>최고 {Math.round(weather.today.tempMax)}°</span>
+                <span>최고 {formatTemperature(weather.today.tempMax)}</span>
                 <span className="w-px h-4 bg-slate-300" />
-                <span>최저 {Math.round(weather.today.tempMin)}°</span>
+                <span>최저 {formatTemperature(weather.today.tempMin)}</span>
               </div>
             </div>
 
