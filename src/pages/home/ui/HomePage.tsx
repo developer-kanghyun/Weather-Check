@@ -1,15 +1,56 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Location } from '@/entities/location';
 import { FavoritesSidebar } from '@/widgets/favorites-sidebar';
 import { MainWeather } from '@/widgets/main-weather';
 import { useLocationWeather } from '@/features/weather-fetch';
+import { useCurrentPosition } from '@/features/geolocation';
+import { reverseGeocode } from '@/shared/api/weather';
 import { weatherThemes, type WeatherStatus } from '@/shared/lib/weather-theme';
 
 export function HomePage() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [hasInitialLocation, setHasInitialLocation] = useState(false);
   const navigate = useNavigate();
+  const { data: currentPosition } = useCurrentPosition();
   
+  // 앱 첫 진입 시 현재 위치를 자동으로 선택, 지명 파악
+  useEffect(() => {
+    async function setInitialLocation() {
+      if (currentPosition && !hasInitialLocation) {
+        let currentAddress = '현재 위치';
+        
+        try {
+          const geoResults = await reverseGeocode({ 
+            lat: currentPosition.lat, 
+            lon: currentPosition.lon 
+          });
+          
+          if (geoResults && geoResults[0]) {
+            const { name, state, local_names } = geoResults[0];
+            const koName = local_names?.ko || name;
+            // state는 번역이 안 될 수도 있으므로, 영어라면 생략하거나 그대로 표시
+            currentAddress = state ? `${state} ${koName}` : koName;
+          }
+        } catch (error) {
+          console.error('역지오코딩 실패:', error);
+        }
+
+        setSelectedLocation({
+          id: 'current-location',
+          displayLabel: currentAddress,
+          originalName: currentAddress,
+          parts: [currentAddress],
+          depth: 0,
+          position: { lat: currentPosition.lat, lon: currentPosition.lon },
+        });
+        setHasInitialLocation(true);
+      }
+    }
+    
+    setInitialLocation();
+  }, [currentPosition, hasInitialLocation]);
+
   const { weather } = useLocationWeather(selectedLocation);
   const weatherStatus: WeatherStatus = (weather?.current?.main as WeatherStatus) || 'Clear';
   const theme = weatherThemes[weatherStatus] ?? weatherThemes.Clear;

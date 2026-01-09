@@ -3,6 +3,7 @@ import { useLocationWeather } from '@/features/weather-fetch';
 import { FavoriteToggle } from '@/features/favorite-toggle';
 import { useFavorites } from '@/features/favorite-manage';
 import type { Location } from '@/entities/location';
+import { localizeWeather } from '@/shared/lib/weather-theme';
 
 interface MainWeatherProps {
   selectedLocation: Location | null;
@@ -16,6 +17,10 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
   const favorite = selectedLocation ? favorites.find(f => f.id === selectedLocation.id) : null;
   const displayName = favorite ? favorite.name : (selectedLocation?.displayLabel || '');
   const originalName = favorite ? favorite.originalName : (selectedLocation?.originalName || selectedLocation?.displayLabel);
+
+  const isCurrentLocation = selectedLocation?.id === 'current-location';
+  const displayTitle = isCurrentLocation ? '나의 위치' : displayName;
+  const subTitle = isCurrentLocation ? displayName : (originalName && displayName !== originalName ? originalName : null);
 
   return (
     <main className="flex-1 flex flex-col items-center gap-10 p-12 lg:p-20 overflow-y-auto z-10">
@@ -53,25 +58,32 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
 
         {weather && selectedLocation && (
           <div className="glass-panel rounded-[2.5rem] p-10 w-full max-w-md text-center relative shadow-2xl backdrop-blur-md">
-            <FavoriteToggle 
-              location={selectedLocation} 
-              position={position ?? null} 
-              className="absolute top-6 right-6" 
-            />
+            {!isCurrentLocation && (
+              <FavoriteToggle 
+                location={selectedLocation} 
+                position={position ?? null} 
+                className="absolute top-6 right-6" 
+              />
+            )}
 
             <div className="flex flex-col items-center gap-1">
-              <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">
-                {displayName}
-              </span>
+              <div className="flex items-center gap-2">
+                {isCurrentLocation && (
+                  <span className="material-symbols-outlined text-blue-500 text-xl" title="현재 위치">my_location</span>
+                )}
+                <span className="text-2xl font-bold text-slate-600 dark:text-slate-300">
+                  {displayTitle}
+                </span>
+              </div>
               
-              {originalName && displayName !== originalName && (
-                <span className="text-sm text-slate-400">
-                  {originalName}
+              {subTitle && (
+                <span className="text-lg font-medium text-description">
+                  {subTitle}
                 </span>
               )}
               
               <div className="flex items-center gap-4">
-                <span className="text-7xl font-black text-[#111618] dark:text-white">{weather.current.temp}°</span>
+                <span className="text-7xl font-black text-[#111618] dark:text-white">{Math.round(weather.current.temp)}°</span>
                 <span className="material-symbols-outlined text-7xl text-blue-500">
                    {weather.current.main === 'Clear' ? 'wb_sunny' : 
                     weather.current.main === 'Clouds' ? 'cloud' : 
@@ -79,30 +91,17 @@ export function MainWeather({ selectedLocation, onSelectLocation }: MainWeatherP
                 </span>
               </div>
               
-              <p className="text-xl font-bold text-slate-700 dark:text-slate-200">{weather.current.description || weather.current.main}</p>
+              <p className="text-xl font-bold text-slate-700 dark:text-slate-200 capitalize">
+                {localizeWeather(weather.current.description || weather.current.main)}
+              </p>
               
               <div className="mt-4 flex gap-6 text-sm font-semibold text-slate-500 bg-black/5 px-6 py-2 rounded-full">
-                <span>최고 {weather.today.tempMax}°</span>
+                <span>최고 {Math.round(weather.today.tempMax)}°</span>
                 <span className="w-px h-4 bg-slate-300" />
-                <span>최저 {weather.today.tempMin}°</span>
+                <span>최저 {Math.round(weather.today.tempMin)}°</span>
               </div>
             </div>
 
-            <div className="mt-10 pt-8 border-t border-slate-200/50 w-full">
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {weather.hourly.map((hourlyWeather, index) => (
-                  <div key={hourlyWeather.dt} className="flex flex-col items-center gap-2 min-w-[60px] p-3 rounded-2xl hover:bg-white/50 transition-colors">
-                    <span className="text-xs font-bold text-slate-500">
-                      {index === 0 ? '지금' : `${new Date(hourlyWeather.dt * 1000).getHours()}시`}
-                    </span>
-                    <span className="material-symbols-outlined text-2xl text-slate-600">
-                      {hourlyWeather.main === 'Clear' ? 'wb_sunny' : 'cloud'}
-                    </span>
-                    <span className="text-sm font-bold text-[#111618] dark:text-white">{hourlyWeather.temp}°</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
       </section>

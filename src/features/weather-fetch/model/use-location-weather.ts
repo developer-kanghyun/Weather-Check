@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { geocodeDirect, fetchOneCall } from '@/shared/api/weather';
+import { getLocation, fetchOneCall } from '@/shared/api/weather';
 import { normalizeOneCall, type NormalizedWeather } from '@/entities/weather';
 import type { Location } from '@/entities/location';
 
@@ -8,10 +8,9 @@ export function useLocationWeather(location: Location | null) {
     queryKey: ['geocode', location?.displayLabel],
     queryFn: async () => {
       if (!location) return null;
-      // 이미 위치정보가 있다면 지오코딩 생략 (이름 변경 시에도 날씨 데이터 유지)
       if (location.position) return location.position;
       
-      const results = await geocodeDirect({ q: `${location.displayLabel},KR`, limit: 1 });
+      const results = await getLocation(location.displayLabel);
       if (!results.length) return null;
       return { lat: results[0].lat, lon: results[0].lon };
     },
