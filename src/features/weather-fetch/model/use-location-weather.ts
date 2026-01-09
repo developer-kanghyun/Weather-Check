@@ -5,12 +5,12 @@ import type { Location } from '@/entities/location';
 
 export function useLocationWeather(location: Location | null) {
   const geocodeQuery = useQuery({
-    queryKey: ['geocode', location?.displayLabel],
+    queryKey: ['geocode', location?.fullAddress],
     queryFn: async () => {
       if (!location) return null;
       if (location.position) return location.position;
       
-      const results = await getLocation(location.displayLabel);
+      const results = await getLocation(location.fullAddress);
       if (!results.length) return null;
       return { lat: results[0].lat, lon: results[0].lon };
     },

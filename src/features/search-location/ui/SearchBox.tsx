@@ -96,7 +96,7 @@ export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하�
           <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
         </button>
       </div>
-      {isOpen && (
+      {isOpen && query.trim() !== '' && (
         <SearchResultList 
           results={results} 
           onSelect={handleSelect} 
