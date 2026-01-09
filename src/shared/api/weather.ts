@@ -1,6 +1,6 @@
 import { requestJson } from '@/shared/api/base';
 
-const BASE_URL = 'https://api.openweathermap.org';
+const baseUrl = 'https://api.openweathermap.org';
 
 function getApiKey() {
   const key = import.meta.env.VITE_OPENWEATHER_API_KEY;
@@ -14,29 +14,20 @@ function callWeatherApi<T>(
   signal?: AbortSignal
 ) {
   return requestJson<T>({
-    baseUrl: BASE_URL,
+    baseUrl,
     path,
     query: { ...query, appid: getApiKey() },
     signal,
   });
 }
 
-export type GeocodingDirectItem = {
+export type GeocodingResult = {
   name: string;
   lat: number;
   lon: number;
   country: string;
   state?: string;
 };
-
-export async function geocodeDirect(params: {
-  q: string;
-  limit?: number;
-  signal?: AbortSignal;
-}) {
-  const { q, limit = 5, signal } = params;
-  return callWeatherApi<GeocodingDirectItem[]>('/geo/1.0/direct', { q, limit }, signal);
-}
 
 export type OneCallWeatherResponse = {
   lat: number;
@@ -60,6 +51,28 @@ export type OneCallWeatherResponse = {
   }>;
 };
 
+const regions: Record<string, { lat: number; lon: number }> = {
+  '강원특별자치도': { lat: 37.8854, lon: 127.7298 },
+  '경기도': { lat: 37.2752, lon: 127.0095 },
+  '충청북도': { lat: 36.6359, lon: 127.4913 },
+  '충청남도': { lat: 36.6588, lon: 126.6730 },
+  '전북특별자치도': { lat: 35.8205, lon: 127.1088 },
+  '전라남도': { lat: 34.8161, lon: 126.4628 },
+  '경상북도': { lat: 36.5760, lon: 128.5056 },
+  '경상남도': { lat: 35.2383, lon: 128.6923 },
+  '제주특별자치도': { lat: 33.4996, lon: 126.5312 },
+  '세종특별자치시': { lat: 36.4800, lon: 127.2890 },
+};
+
+export async function geocodeDirect(params: {
+  q: string;
+  limit?: number;
+  signal?: AbortSignal;
+}) {
+  const { q, limit = 5, signal } = params;
+  return callWeatherApi<GeocodingResult[]>('/geo/1.0/direct', { q, limit }, signal);
+}
+
 export async function fetchOneCall(params: {
   lat: number;
   lon: number;
@@ -69,4 +82,44 @@ export async function fetchOneCall(params: {
 }) {
   const { lat, lon, units = 'metric', lang = 'ko', signal } = params;
   return callWeatherApi<OneCallWeatherResponse>('/data/3.0/onecall', { lat, lon, units, lang }, signal);
+}
+
+function buildCandidates(locationName: string): string[] {
+  const tokens = locationName.split(/\s+/);
+  const last = tokens[tokens.length - 1];
+  const last2 = tokens.length >= 2 ? `${tokens[tokens.length - 2]} ${last}` : '';
+
+  const candidates = [locationName, last2, last];
+
+  const stripped = last.replace(/(군|읍|면|리|동)$/, '');
+  if (stripped !== last && stripped.length >= 2) {
+    candidates.push(stripped);
+  }
+
+  return Array.from(new Set(candidates))
+    .filter(s => s && s.trim().length > 0)
+    .map(s => `${s.trim()},KR`);
+}
+
+export async function getLocation(locationName: string): Promise<GeocodingResult[]> {
+  const name = locationName.trim();
+  if (!name) return [];
+
+  const parts = name.split(/\s+/);
+  const lastPart = parts[parts.length - 1];
+  
+  if (regions[lastPart]) {
+    return [{ name: lastPart, ...regions[lastPart], country: 'KR' }];
+  }
+
+  for (const query of buildCandidates(name)) {
+    try {
+      const result = await geocodeDirect({ q: query, limit: 1 });
+      if (result?.[0]) return result;
+    } catch {
+      continue;
+    }
+  }
+
+  return [];
 }

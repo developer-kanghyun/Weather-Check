@@ -15,12 +15,12 @@ export function HomePage() {
   const theme = weatherThemes[weatherStatus] ?? weatherThemes.Clear;
 
   const handleSelectLocation = useCallback((location: Location) => {
-    // 검색 결과를 선택할 때, 좌표와 함께 상세 페이지로 이동 (즐겨찾기 되지 않은 경우 name 쿼리를 포함)
-    const params = new URLSearchParams({
-      lat: String(location.position?.lat),
-      lon: String(location.position?.lon),
-      name: location.displayLabel
-    });
+    // 유효한 좌표만 URL 파라미터에 포함
+    const params = new URLSearchParams();
+    if (location.position?.lat) params.set('lat', String(location.position.lat));
+    if (location.position?.lon) params.set('lon', String(location.position.lon));
+    params.set('name', location.displayLabel);
+    
     navigate(`/detail/${location.id}?${params.toString()}`);
   }, [navigate]);
 

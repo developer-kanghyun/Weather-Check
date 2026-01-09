@@ -1,7 +1,7 @@
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useFavorites } from '@/features/favorite-manage/model/use-favorites';
 import { useQuery } from '@tanstack/react-query';
-import { fetchOneCall, type OneCallWeatherResponse } from '@/shared/api/weather';
+import { fetchOneCall, getLocation, type OneCallWeatherResponse } from '@/shared/api/weather';
 import { weatherThemes, type WeatherStatus } from '@/shared/lib/weather-theme';
 
 export function DetailPage() {
@@ -10,40 +10,80 @@ export function DetailPage() {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
 
-  // 즐겨찾기에 없으면 URL 정보 사용
   const favorite = favorites.find(f => f.id === locationId);
-  const lat = favorite?.lat || Number(searchParams.get('lat'));
-  const lon = favorite?.lon || Number(searchParams.get('lon'));
-  const name = favorite?.name || searchParams.get('name') || '알 수 없는 지역';
+  const paramLat = searchParams.get('lat');
+  const paramLon = searchParams.get('lon');
+  const locationName = favorite?.name || searchParams.get('name') || '';
 
-  const { data: weather, isLoading, isError } = useQuery<OneCallWeatherResponse>({
-    queryKey: ['oneCallWeather', lat, lon],
-    queryFn: () => fetchOneCall({ lat, lon }),
-    enabled: !!lat && !!lon,
-    staleTime: 1000 * 60 * 10,
+  const needsGeocoding = !favorite && (!paramLat || !paramLon) && !!locationName;
+  
+  const { 
+    data: geoData = [], 
+    isLoading: isGeoLoading,
+    isError: isGeoError
+  } = useQuery({
+    queryKey: ['geocode', locationName],
+    queryFn: () => getLocation(locationName),
+    enabled: needsGeocoding,
+    staleTime: 1000 * 60 * 60 * 24,
   });
 
-  const weatherStatus: WeatherStatus = (weather?.current?.weather?.[0]?.main as WeatherStatus) || 'Clear';
-  const theme = weatherThemes[weatherStatus] ?? weatherThemes.Clear;
+  // 좌표 우선순위 (URL 파라미터 > 즐겨찾기 > 지오코딩)
+  const lat = Number(paramLat) || favorite?.lat || geoData[0]?.lat;
+  const lon = Number(paramLon) || favorite?.lon || geoData[0]?.lon;
 
-  if (!lat || !lon) {
+  const { 
+    data: weather, 
+    isLoading: isWeatherLoading, 
+    isError: isWeatherError 
+  } = useQuery<OneCallWeatherResponse>({
+    queryKey: ['weather', lat, lon],
+    queryFn: () => fetchOneCall({ lat: lat!, lon: lon! }),
+    enabled: !!lat && !!lon,
+  });
+
+  if (isGeoLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="glass-panel p-8 rounded-2xl text-center">
-          <h2 className="text-xl font-bold mb-4">지역 정보를 찾을 수 없습니다.</h2>
-          <button onClick={() => navigate('/')} className="text-blue-500 hover:underline">홈</button>
+      <div className="flex h-screen items-center justify-center bg-gray-900 text-white">
+        <div className="animate-pulse">위치 정보를 확인하고 있습니다...</div>
+      </div>
+    );
+  }
+
+  if (needsGeocoding && (isGeoError || geoData.length === 0)) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-900 text-white p-6">
+        <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
+          <h2 className="text-xl font-bold mb-2">지역을 찾을 수 없습니다</h2>
+          <p className="opacity-60 mb-6 font-medium">"{locationName}" 지역의 좌표 정보를 가져오지 못했습니다.</p>
+          <button onClick={() => navigate('/')} className="bg-white/20 px-6 py-2 rounded-full font-bold">홈으로 가기</button>
         </div>
       </div>
     );
   }
 
-  if (isLoading || isError || !weather) {
+  if (isWeatherLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-900 text-white">
-        <div className="animate-pulse">{isLoading ? '날씨 정보를 불러오는 중...' : '데이터 로드 실패'}</div>
+        <div className="animate-pulse">실시간 날씨 데이터를 불러오고 있습니다...</div>
       </div>
     );
   }
+
+  if (isWeatherError || !weather) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-900 text-white p-6">
+        <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
+          <h2 className="text-xl font-bold mb-2">날씨 조회 실패</h2>
+          <p className="opacity-60 mb-6 font-medium">해당 지역의 날씨 정보를 불러오는 중 오류가 발생했습니다.</p>
+          <button onClick={() => navigate('/')} className="bg-white/20 px-6 py-2 rounded-full font-bold">홈으로 가기</button>
+        </div>
+      </div>
+    );
+  }
+
+  const weatherStatus: WeatherStatus = (weather.current?.weather?.[0]?.main as WeatherStatus) || 'Clear';
+  const theme = weatherThemes[weatherStatus] ?? weatherThemes.Clear;
 
   return (
     <div className="flex min-h-screen relative overflow-hidden text-white">
@@ -61,7 +101,7 @@ export function DetailPage() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="text-4xl font-black drop-shadow-md">{name}</h1>
+          <h1 className="text-4xl font-black drop-shadow-md">{locationName}</h1>
         </header>
 
         <section className="glass-panel rounded-[2.5rem] p-10 text-center mb-10 shadow-2xl backdrop-blur-md">
