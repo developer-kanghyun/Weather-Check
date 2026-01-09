@@ -27,3 +27,16 @@ export const weatherThemes: Record<WeatherStatus, WeatherTheme> = {
     gradientOverlay: 'from-gray-200/50 via-white/30 to-gray-100/20',
   },
 };
+
+const weatherDescriptionMap: Record<string, string> = {
+  '튼구름': '구름 많음',
+  '온흐림': '흐림',
+  '실비': '이슬비',
+  '박무': '안개',
+  '연무': '안개',
+};
+
+export function localizeWeather(description: string): string {
+  if (!description) return '';
+  return weatherDescriptionMap[description] || description;
+}
