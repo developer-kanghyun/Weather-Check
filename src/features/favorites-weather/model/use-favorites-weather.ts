@@ -6,7 +6,7 @@ import type { Favorite } from '@/entities/favorite';
 export function useFavoritesWeather(favorites: Favorite[]) {
   const queries = useQueries({
     queries: favorites.map((fav) => ({
-      queryKey: ['weather', fav.lat, fav.lon],
+      queryKey: ['favorite-weather', fav.lat, fav.lon],
       queryFn: async (): Promise<NormalizedWeather | null> => {
         const raw = await fetchOneCall({ lat: fav.lat, lon: fav.lon });
         return normalizeOneCall(raw);

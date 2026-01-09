@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFavorites } from '@/features/favorite-manage';
 import { useFavoritesWeather } from '@/features/favorites-weather';
 import { FavoriteEditField } from '@/features/favorite-edit';
-import type { Location } from '@/entities/location';
+import { type Location, createLocation } from '@/entities/location';
 
 interface FavoritesSidebarProps {
   onSelectLocation: (location: Location) => void;
@@ -22,8 +22,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
 
       {favorites.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2 opacity-60">
-          <span className="material-symbols-outlined text-4xl">bookmark_add</span>
-          <p className="text-sm text-center">즐겨찾는 지역을<br/>추가해보세요</p>
+          <p className="text-lg text-center">즐겨찾는 지역을<br/>추가해보세요</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -38,14 +37,12 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                 className={`glass-panel p-4 rounded-xl text-left transition-all group relative flex justify-between items-start cursor-pointer hover:bg-white/20 ${
                   isSelected ? 'ring-2 ring-blue-500 bg-white/30' : ''
                 }`}
-                onClick={() => !isEditingThis && onSelectLocation({
+                onClick={() => !isEditingThis && onSelectLocation(createLocation({
                   id: favorite.id,
-                  displayLabel: favorite.name,
-                  originalName: favorite.originalName,
                   parts: [favorite.name],
-                  depth: 0,
+                  originalName: favorite.originalName,
                   position: { lat: favorite.lat, lon: favorite.lon },
-                })}
+                }))}
               >
                 <div className="flex-1 min-w-0 pr-2">
                   <div className="flex items-center gap-2">
@@ -98,8 +95,8 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                       {favoriteWeather.current.temp}°
                     </span>
                     <div className="flex gap-2 text-[10px] text-slate-500">
-                      <span>최고 {favoriteWeather.today.tempMax}°</span>
-                      <span>최저 {favoriteWeather.today.tempMin}°</span>
+                      <span>최고 {favoriteWeather.today?.tempMax ?? '-'}°</span>
+                      <span>최저 {favoriteWeather.today?.tempMin ?? '-'}°</span>
                     </div>
                   </div>
                 )}
