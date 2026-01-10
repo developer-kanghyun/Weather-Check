@@ -86,7 +86,7 @@ export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하�
           onCompositionEnd={() => setIsComposing(false)}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="glass-input h-12 w-full rounded-full pl-11 pr-12 text-base text-[#111618] placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white dark:placeholder:text-slate-400 border border-slate-200 shadow-sm"
+          className="glass-input h-12 w-full rounded-full pl-11 pr-12 text-base text-[#111618] placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-slate-200 shadow-sm"
         />
         <button
           type="button"

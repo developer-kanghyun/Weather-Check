@@ -28,7 +28,7 @@ export function FavoriteToggle({ location, position, className = '' }: FavoriteT
       className={`p-2 rounded-full transition-all ${
         isActive 
           ? 'text-yellow-500 bg-yellow-500/10' 
-          : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
+          : 'text-slate-400 hover:bg-slate-100'
       } ${!position ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
       title={isActive ? '즐겨찾기 삭제' : '즐겨찾기 추가'}
     >

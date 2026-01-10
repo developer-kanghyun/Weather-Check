@@ -3,6 +3,11 @@ import { useFavorites } from '@/features/favorite-manage';
 import { useFavoritesWeather } from '@/features/favorites-weather';
 import { FavoriteEditField } from '@/features/favorite-edit';
 import { type Location, createLocation } from '@/entities/location';
+import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
+
+function formatLocationName(name: string): string {
+  return name.split(/[\s-]+/).pop() ?? name;
+}
 
 interface FavoritesSidebarProps {
   onSelectLocation: (location: Location) => void;
@@ -15,27 +20,34 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
   const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
-    <aside className="w-80 h-screen sticky top-0 flex-shrink-0 p-6 glass-panel border-r border-white/10 flex flex-col gap-6 overflow-y-auto z-20">
-      <h2 className="text-xl font-extrabold text-[#111618] dark:text-white flex items-center gap-2">
-        즐겨찾기
+    <aside className="w-72 h-full flex-shrink-0 glass-panel rounded-3xl p-5 flex flex-col gap-4 overflow-y-auto">
+      <h2 className="text-lg font-bold text-[#111618]">
+        즐겨찾는 지역
       </h2>
 
       {favorites.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2 opacity-60">
-          <p className="text-lg text-center">즐겨찾는 지역을<br/>추가해보세요</p>
+          <p className="text-base text-center">즐겨찾는 지역을<br/>추가해보세요</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {favorites.map((favorite) => {
             const favoriteWeather = weatherByLocationId.get(favorite.id);
             const isSelected = selectedLocationId === favorite.id;
             const isEditingThis = editingId === favorite.id;
+            
+            const condition = favoriteWeather?.current?.main || 'Clear';
+            const style = getWeatherStyle(condition);
+            
+            const shortName = formatLocationName(favorite.name);
+            const shortOriginalName = formatLocationName(favorite.originalName);
+            const showSubtitle = shortName !== shortOriginalName;
 
             return (
               <div
                 key={favorite.id}
-                className={`glass-panel p-4 rounded-xl text-left transition-all group relative flex justify-between items-start cursor-pointer hover:bg-white/20 ${
-                  isSelected ? 'ring-2 ring-blue-500 bg-white/30' : ''
+                className={`group bg-white/50 p-3.5 rounded-2xl text-left transition-all cursor-pointer hover:bg-white/70 flex items-center gap-3 relative ${
+                  isSelected ? 'ring-2 ring-blue-500 bg-white/80' : ''
                 }`}
                 onClick={() => !isEditingThis && onSelectLocation(createLocation({
                   id: favorite.id,
@@ -44,59 +56,64 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                   position: { lat: favorite.lat, lon: favorite.lon },
                 }))}
               >
-                <div className="flex-1 min-w-0 pr-2">
-                  <div className="flex items-center gap-2">
-                    {isEditingThis ? (
-                      <FavoriteEditField 
-                        favoriteId={favorite.id} 
-                        currentName={favorite.name}
-                        onEditingChange={(editing) => setEditingId(editing ? favorite.id : null)}
-                      />
-                    ) : (
-                      <>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-bold text-lg text-[#111618] dark:text-white block truncate">
-                            {favorite.name}
+                <div className={`flex-shrink-0 flex items-center justify-center size-10 rounded-full ${style.bg} ${style.color}`}>
+                  <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {style.icon}
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  {isEditingThis ? (
+                    <FavoriteEditField 
+                      favoriteId={favorite.id} 
+                      currentName={favorite.name}
+                      onEditingChange={(editing) => setEditingId(editing ? favorite.id : null)}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <div className="flex-1 min-w-0">
+                        <span className="font-bold text-sm text-[#111618] block truncate">
+                          {shortName}
+                        </span>
+                        {showSubtitle && (
+                          <span className="text-xs text-slate-400 block truncate">
+                            {shortOriginalName}
                           </span>
-                          {favorite.name !== favorite.originalName && (
-                            <span className="text-sm text-slate-400 block truncate">
-                              {favorite.originalName}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <button 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              setEditingId(favorite.id); 
-                            }}
-                            className="p-1 rounded-full text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center"
-                            title="별명 수정"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">edit</span>
-                          </button>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); remove(favorite.id); }}
-                            className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center"
-                            title="삭제"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">close</span>
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                        )}
+                      </div>
+                      
+                      <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0 transition-all">
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setEditingId(favorite.id); 
+                          }}
+                          className="p-1 rounded-full text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
+                          title="별명 수정"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">edit</span>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); remove(favorite.id); }}
+                          className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          title="삭제"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {favoriteWeather && !isEditingThis && (
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-xl font-bold text-[#111618] dark:text-white">
+                  <div className="text-right flex-shrink-0 min-w-[4.5rem]">
+                    <span className="text-xl font-bold text-[#111618] relative -left-[10px] tabular-nums">
                       {favoriteWeather.current.temp}°
                     </span>
-                    <div className="flex gap-2 text-[10px] text-slate-500">
-                      <span>최고 {favoriteWeather.today?.tempMax ?? '-'}°</span>
-                      <span>최저 {favoriteWeather.today?.tempMin ?? '-'}°</span>
+                    <div className="flex gap-2 text-[12px] font-medium text-slate-500 justify-end tabular-nums">
+                      <span>{favoriteWeather.today?.tempMax ?? '-'}°</span>
+                      <span className="text-slate-300 opacity-50">|</span>
+                      <span>{favoriteWeather.today?.tempMin ?? '-'}°</span>
                     </div>
                   </div>
                 )}
