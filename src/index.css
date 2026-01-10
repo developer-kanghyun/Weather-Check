@@ -6,8 +6,12 @@
 @tailwind utilities;
 
 @layer base {
+  html, body {
+    @apply h-full bg-slate-100 overscroll-none;
+    overscroll-behavior-y: none;
+  }
   body {
-    @apply bg-background-light text-[#111618] font-display min-h-screen relative;
+    @apply text-[#111618] font-display min-h-screen relative;
   }
 }
 

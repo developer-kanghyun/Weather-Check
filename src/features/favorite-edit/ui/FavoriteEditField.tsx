@@ -41,19 +41,19 @@ export function FavoriteEditField({ favoriteId, currentName, onSuccess, onEditin
         onChange={(e) => setName(e.target.value)}
         onKeyDown={handleKeyDownWithCallback}
         autoFocus
-        className="flex-1 font-bold text-[#111618] bg-white/50 px-2 py-1 rounded border border-blue-500 outline-none min-w-0 text-sm"
+        className="flex-1 font-bold text-[#111618] dark:text-white bg-white/50 dark:bg-black/30 px-2 py-1 rounded border border-blue-500 outline-none min-w-0 text-sm"
       />
       <div className="flex items-center gap-1 flex-shrink-0">
         <button 
           onClick={handleSave}
-          className="p-1 rounded-full text-green-600 hover:bg-green-50 transition-colors"
+          className="p-1 rounded-full text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
           title="저장"
         >
           <span className="material-symbols-outlined text-[18px]">check</span>
         </button>
         <button 
           onClick={handleCancel}
-          className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors"
+          className="p-1 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
           title="취소"
         >
           <span className="material-symbols-outlined text-[18px]">close</span>

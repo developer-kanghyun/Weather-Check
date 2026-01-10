@@ -4,6 +4,10 @@ export interface NormalizedWeather {
     description: string;
     icon: string;
     main: string;
+    humidity: number;
+    wind_speed: number;
+    uvi: number;
+    visibility: number;
   };
   today: {
     tempMin: number;
@@ -14,6 +18,18 @@ export interface NormalizedWeather {
     temp: number;
     icon: string;
     main: string;
+    weather?: Array<{ main: string; icon: string }>;
+  }>;
+  daily: Array<{
+    dt: number;
+    temp: {
+      min: number;
+      max: number;
+    };
+    weather: Array<{
+      main: string;
+      icon: string;
+    }>;
   }>;
 }
 

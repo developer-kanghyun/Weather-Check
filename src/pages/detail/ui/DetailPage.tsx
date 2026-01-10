@@ -61,7 +61,7 @@ export function DetailPage() {
   const currentVariant = getWeatherStyle(weather.current.main);
 
   return (
-    <main className="flex-1 p-6 overflow-y-auto animate-slide-up flex flex-col gap-6">
+    <main className="flex-1 p-6 overflow-y-auto animate-slide-up flex flex-col gap-4">
       <header className="flex items-center gap-3 pb-2">
         <button 
           onClick={() => navigate('/')}
@@ -108,6 +108,33 @@ export function DetailPage() {
         </div>
       </section>
 
+      <section className="glass-panel w-full overflow-hidden rounded-3xl p-5">
+        <h4 className="mb-4 text-lg font-bold text-[#111618]">시간별 예보</h4>
+        <div className="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {weather.hourly?.slice(0, 24).map((hour: any, index: number) => {
+             const variant = getWeatherStyle(hour.weather?.[0]?.main);
+             return (
+                <div 
+                  key={hour.dt} 
+                  className={`flex min-w-[88px] flex-col items-center gap-1 rounded-3xl p-5 transition ${
+                    index === 0 
+                      ? 'bg-blue-100/50 border border-blue-200/50' 
+                      : 'hover:bg-white/40'
+                  }`}
+                >
+                  <span className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+                    {index === 0 ? '지금' : new Intl.DateTimeFormat('ko-KR', { hour: 'numeric', hour12: true }).format(new Date(hour.dt * 1000))}
+                  </span>
+                  <span className={`material-symbols-outlined text-3xl drop-shadow-sm ${variant.color}`}>
+                    {variant.icon}
+                  </span>
+                  <span className="text-lg font-bold text-[#111618]">{Math.round(hour.temp)}°</span>
+                </div>
+            );
+          })}
+        </div>
+      </section>
+
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
         <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-6 transition-transform hover:-translate-y-1 h-44 justify-between bg-blue-50/50">
@@ -127,7 +154,7 @@ export function DetailPage() {
             </div>
             <div>
                 <span className="text-sm font-medium text-slate-500 mb-1 block">바람</span>
-                <p className="text-3xl font-bold text-[#111618]">{weather.current.wind_speed}m/s</p>
+                <p className="text-3xl font-bold text-[#111618]">{Math.round(weather.current.wind_speed)}m/s</p>
             </div>
         </div>
         
@@ -156,33 +183,6 @@ export function DetailPage() {
                 <span className="text-sm font-medium text-slate-500 mb-1 block">가시거리</span>
                 <p className="text-3xl font-bold text-[#111618]">{(weather.current.visibility / 1000).toFixed(0)}km</p>
             </div>
-        </div>
-      </section>
-
-      <section className="glass-panel w-full overflow-hidden rounded-3xl p-5">
-        <h4 className="mb-3 text-lg font-bold text-[#111618]">시간별 예보</h4>
-        <div className="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {weather.hourly?.slice(0, 24).map((hour: any, index: number) => {
-             const variant = getWeatherStyle(hour.weather?.[0]?.main);
-             return (
-                <div 
-                  key={hour.dt} 
-                  className={`flex min-w-[88px] flex-col items-center gap-4 rounded-3xl p-5 transition ${
-                    index === 0 
-                      ? 'bg-blue-100/50 border border-blue-200/50' 
-                      : 'hover:bg-white/40'
-                  }`}
-                >
-                  <span className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
-                    {index === 0 ? '지금' : new Intl.DateTimeFormat('ko-KR', { hour: 'numeric', hour12: true }).format(new Date(hour.dt * 1000))}
-                  </span>
-                  <span className={`material-symbols-outlined text-3xl drop-shadow-sm ${variant.color}`}>
-                    {variant.icon}
-                  </span>
-                  <span className="text-lg font-bold text-[#111618]">{Math.round(hour.temp)}°</span>
-                </div>
-            );
-          })}
         </div>
       </section>
 

@@ -56,19 +56,10 @@ export function HomePage() {
     setWeatherStatus(status);
   }, [weather, setWeatherStatus]);
 
-  const handleSelectLocation = useCallback((location: Location) => {
-    const params = new URLSearchParams();
-    if (location.position?.lat) params.set('lat', String(location.position.lat));
-    if (location.position?.lon) params.set('lon', String(location.position.lon));
-    params.set('name', location.displayLabel);
-    
-    navigate(`/detail/${location.id}?${params.toString()}`);
-  }, [navigate]);
 
   return (
     <MainWeather 
       selectedLocation={selectedLocation} 
-      onSelectLocation={handleSelectLocation} 
     />
   );
 }

@@ -20,7 +20,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
   const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
-    <aside className="w-72 h-full flex-shrink-0 glass-panel rounded-3xl p-5 flex flex-col gap-4 overflow-y-auto">
+    <aside className="w-80 h-full flex-shrink-0 glass-panel rounded-[2rem] p-6 flex flex-col gap-6 overflow-y-auto">
       <h2 className="text-lg font-bold text-[#111618]">
         즐겨찾는 지역
       </h2>
@@ -30,7 +30,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
           <p className="text-base text-center">즐겨찾는 지역을<br/>추가해보세요</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           {favorites.map((favorite) => {
             const favoriteWeather = weatherByLocationId.get(favorite.id);
             const isSelected = selectedLocationId === favorite.id;
@@ -98,7 +98,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                           className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
                           title="삭제"
                         >
-                          <span className="material-symbols-outlined text-[14px]">close</span>
+                          <span className="material-symbols-outlined text-[14px]">delete</span>
                         </button>
                       </div>
                     </div>

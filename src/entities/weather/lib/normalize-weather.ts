@@ -19,6 +19,10 @@ export function normalizeOneCall(raw: OneCallWeatherResponse): NormalizedWeather
       description: currentWeather?.description ?? '',
       icon: currentWeather?.icon ?? '01d',
       main: currentWeather?.main ?? 'Clear',
+      humidity: current.humidity ?? 0,
+      wind_speed: current.wind_speed ?? 0,
+      uvi: current.uvi ?? 0,
+      visibility: current.visibility ?? 0,
     },
     today: {
       tempMin: Math.round(todayDaily.temp.min),
@@ -29,6 +33,15 @@ export function normalizeOneCall(raw: OneCallWeatherResponse): NormalizedWeather
       temp: Math.round(h.temp),
       icon: h.weather?.[0]?.icon ?? '01d',
       main: h.weather?.[0]?.main ?? 'Clear',
+      weather: h.weather,
+    })),
+    daily: (daily ?? []).map((d) => ({
+      dt: d.dt,
+      temp: {
+        min: d.temp.min,
+        max: d.temp.max,
+      },
+      weather: d.weather ?? [],
     })),
   };
 }
