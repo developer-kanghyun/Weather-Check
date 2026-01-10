@@ -1,226 +1,211 @@
-import { useEffect, useMemo } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { fetchOneCall, getLocation, type OneCallWeatherResponse } from '@/shared/api/weather';
-import { type WeatherStatus } from '@/shared/lib/weather-theme';
-import { formatWeatherDescription, formatTemperature } from '@/entities/weather/lib/weather-format';
-import { useTheme } from '@/shared/context/ThemeContext';
-import { createLocation } from '@/entities/location';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useLocationWeather } from '@/features/weather-fetch';
 import { FavoriteToggle } from '@/features/favorite-toggle';
+import { formatWeatherDescription, formatTemperature } from '@/entities/weather/lib/weather-format';
+import { useEffect } from 'react';
+import { useTheme } from '@/shared/context/ThemeContext';
+import { type WeatherStatus } from '@/shared/lib/weather-theme';
+import { createLocation } from '@/entities/location';
+import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
 
 export function DetailPage() {
   const { locationId } = useParams<{ locationId: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setWeatherStatus } = useTheme();
 
-  const paramLat = searchParams.get('lat');
-  const paramLon = searchParams.get('lon');
-  const locationName = searchParams.get('name') || '';
 
-  const needsGeocoding = (!paramLat || !paramLon) && !!locationName;
-  
-  const { 
-    data: geoData = [], 
-    isLoading: isGeoLoading,
-    isError: isGeoError
-  } = useQuery({
-    queryKey: ['geocode', locationName],
-    queryFn: () => getLocation(locationName),
-    enabled: needsGeocoding,
-    staleTime: Infinity,
+  const searchParams = new URLSearchParams(window.location.search);
+  const locationName = searchParams.get('name');
+  const lat = searchParams.get('lat');
+  const lon = searchParams.get('lon');
+
+
+  const locationParts = (locationName || 'Unknown').split(/[\s-]+/).map(s => s.trim()).filter(Boolean);
+  const location = createLocation({
+    id: locationId || 'unknown',
+    parts: locationParts,
+    originalName: locationName || undefined,
+    position: lat && lon ? { lat: parseFloat(lat), lon: parseFloat(lon) } : undefined
   });
 
-  const lat = Number(paramLat) || geoData[0]?.lat;
-  const lon = Number(paramLon) || geoData[0]?.lon;
-
-  const { 
-    data: weather, 
-    isLoading: isWeatherLoading, 
-    isError: isWeatherError 
-  } = useQuery<OneCallWeatherResponse>({
-    queryKey: ['weather', lat, lon],
-    queryFn: () => fetchOneCall({ lat: lat!, lon: lon! }),
-    enabled: !!lat && !!lon,
-  });
+  const { weather, position, isLoading, isError } = useLocationWeather(location);
 
   useEffect(() => {
-    const status: WeatherStatus = (weather?.current?.weather?.[0]?.main as WeatherStatus) || 'Clear';
-    setWeatherStatus(status);
+    if (weather?.current?.main) {
+        setWeatherStatus(weather.current.main as WeatherStatus);
+    }
   }, [weather, setWeatherStatus]);
 
-  const currentLocation = useMemo(() => {
-    if (!locationId || !lat || !lon) return null;
-    return createLocation({
-      id: locationId,
-      parts: [locationName],
-      originalName: locationName,
-      position: { lat, lon }
-    });
-  }, [locationId, locationName, lat, lon]);
-
-  if (isGeoLoading || isWeatherLoading) {
+  if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center h-full">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-            <span className="material-symbols-outlined text-5xl opacity-50">cloud_sync</span>
-            <p className="font-medium opacity-70">날씨 정보를 불러오는 중...</p>
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+            <span className="material-symbols-outlined text-6xl text-white/50">cloud</span>
+            <p className="text-white/70 font-bold">날씨 정보를 불러오는 중...</p>
         </div>
       </div>
     );
   }
 
-  if (needsGeocoding && (isGeoError || geoData.length === 0)) {
+  if (isError || !weather) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
-          <span className="material-symbols-outlined text-4xl mb-3 text-red-500">error</span>
-          <h2 className="text-xl font-bold mb-2">위치 정보 오류</h2>
-          <p className="opacity-60 mb-6 font-medium text-sm">해당 장소의 정보가 제공되지 않습니다.</p>
-          <button onClick={() => navigate('/')} className="px-6 py-2 rounded-full bg-black/10 hover:bg-black/20 font-bold transition">홈으로 가기</button>
+      <div className="flex h-full items-center justify-center">
+        <div className="glass-panel p-8 rounded-3xl text-center">
+            <p className="text-red-500 font-bold text-lg mb-2">해당 장소의 정보가 제공되지 않습니다.</p>
+            <button onClick={() => navigate('/')} className="text-sm underline opacity-60 hover:opacity-100">홈으로 돌아가기</button>
         </div>
       </div>
     );
   }
 
-  if (isWeatherError || !weather) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="glass-panel p-8 rounded-2xl text-center max-w-sm">
-          <h2 className="text-xl font-bold mb-2">날씨 조회 실패</h2>
-          <p className="opacity-60 mb-6 font-medium">해당 장소의 정보가 제공되지 않습니다.</p>
-          <button onClick={() => navigate('/')} className="px-6 py-2 rounded-full bg-black/10 hover:bg-black/20 font-bold transition">홈으로 가기</button>
-        </div>
-      </div>
-    );
-  }
+  const currentVariant = getWeatherStyle(weather.current.main);
 
   return (
-    <main className="flex-1 p-6 lg:p-12 overflow-y-auto">
-      <header className="flex items-center gap-4 mb-10">
+    <main className="flex-1 p-6 overflow-y-auto animate-slide-up flex flex-col gap-6">
+      <header className="flex items-center gap-3 pb-2">
         <button 
           onClick={() => navigate('/')}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          className="flex size-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition backdrop-blur-md text-[#111618]"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-black drop-shadow-md text-[#111618] dark:text-white">{locationName}</h1>
-          {currentLocation && (
-             <FavoriteToggle 
-               location={currentLocation} 
-               position={{ lat, lon }}
-               className="transform hover:scale-110 transition-transform"
-             />
-          )}
+        
+        <div className="flex items-center gap-2 px-2">
+            <h1 className="text-2xl font-extrabold text-[#111618]">{locationName || 'Unknown Location'}</h1>
+        </div>
+
+        <div className="size-10 flex items-center justify-center">
+             <FavoriteToggle location={location} position={position ?? null} />
         </div>
       </header>
 
-      <section className="glass-panel rounded-[2.5rem] p-10 text-center mb-10 shadow-2xl backdrop-blur-md relative overflow-hidden">
-        <div className="relative z-10">
-            <div className="text-8xl font-black mb-4 text-[#111618] dark:text-white tracking-tighter">
-              {formatTemperature(weather.current?.temp)}
-            </div>
-            <p className="text-2xl font-bold opacity-80 mb-6 capitalize text-[#111618] dark:text-white">
-              {formatWeatherDescription(weather.current?.weather?.[0]?.main, weather.current?.weather?.[0]?.description)}
-            </p>
-            
-            <div className="inline-flex gap-8 text-lg font-bold bg-white/10 px-8 py-3 rounded-full text-[#111618] dark:text-white">
-            <span>최고 {formatTemperature(weather.daily?.[0]?.temp.max)}</span>
-            <span className="w-px h-6 bg-white/20" />
-            <span>최저 {formatTemperature(weather.daily?.[0]?.temp.min)}</span>
-            </div>
-        </div>
-        <span className="material-symbols-outlined absolute -right-10 -bottom-10 text-[250px] opacity-5 pointer-events-none">
-            {weather.current?.weather?.[0]?.main === 'Clear' ? 'wb_sunny' : 'cloud'}
-        </span>
-      </section>
-
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between h-40">
-            <span className="material-symbols-outlined text-3xl mb-2 text-blue-500">water_drop</span>
-            <div>
-                <p className="text-sm opacity-60 font-bold mb-1">습도</p>
-                <p className="text-2xl font-bold">{weather.current?.humidity}%</p>
-            </div>
-        </div>
-        <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between h-40">
-            <span className="material-symbols-outlined text-3xl mb-2 text-teal-500">air</span>
-            <div>
-                <p className="text-sm opacity-60 font-bold mb-1">풍속</p>
-                <p className="text-2xl font-bold">{weather.current?.wind_speed}m/s</p>
-            </div>
-        </div>
-        <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between h-40">
-            <span className="material-symbols-outlined text-3xl mb-2 text-orange-500">wb_sunny</span>
-            <div>
-                <p className="text-sm opacity-60 font-bold mb-1">자외선 지수</p>
-                <p className="text-2xl font-bold">{weather.current?.uvi}</p>
-            </div>
-        </div>
-        <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between h-40">
-            <span className="material-symbols-outlined text-3xl mb-2 text-purple-500">visibility</span>
-            <div>
-                <p className="text-sm opacity-60 font-bold mb-1">가시거리</p>
-                <p className="text-2xl font-bold">{(weather.current?.visibility ?? 0) / 1000}km</p>
-            </div>
-        </div>
-      </section>
-
-      <section className="glass-panel rounded-[2rem] p-8 shadow-xl backdrop-blur-sm mb-10">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-[#111618] dark:text-white">
-          <span className="material-symbols-outlined">schedule</span>
-          시간대별 예보
-        </h2>
-        <div className="flex overflow-x-auto gap-6 pb-2 scrollbar-hide">
-          {weather.hourly?.slice(0, 24).map((hour: any) => (
-            <div key={hour.dt} className="flex flex-col items-center min-w-[70px] py-4 rounded-3xl hover:bg-white/10 transition-colors">
-              <span className="text-xs font-bold opacity-60 mb-2 text-[#111618] dark:text-white">
-                {new Date(hour.dt * 1000).getHours()}시
-              </span>
-              <span className="material-symbols-outlined text-3xl mb-2 text-blue-500 drop-shadow-sm">
-                {hour.weather?.[0]?.main === 'Clear' ? 'wb_sunny' : 'cloud'}
-              </span>
-              <span className="text-lg font-bold text-[#111618] dark:text-white">{Math.round(hour.temp)}°</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="glass-panel rounded-[2rem] p-8 shadow-xl backdrop-blur-sm">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-[#111618] dark:text-white">
-          <span className="material-symbols-outlined">calendar_month</span>
-          7일간 예보
-        </h2>
-        <div className="flex flex-col gap-4">
-          {weather.daily?.slice(1).map((day: any) => (
-            <div key={day.dt} className="flex items-center justify-between py-3 border-b border-black/5 dark:border-white/10 last:border-0">
-              <span className="w-20 font-bold opacity-80 text-[#111618] dark:text-white">
-                {new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(new Date(day.dt * 1000))}
-              </span>
-              <div className="flex items-center gap-2">
-                 <span className="material-symbols-outlined text-2xl text-blue-500">
-                    {day.weather?.[0]?.main === 'Clear' ? 'wb_sunny' : 'cloud'}
-                 </span>
-                 <span className="text-sm opacity-60 hidden sm:block">{day.weather?.[0]?.description}</span>
-              </div>
-              <div className="flex gap-4 w-32 justify-end font-bold text-[#111618] dark:text-white">
-                <span className="opacity-60">{Math.round(day.temp.min)}°</span>
-                <div className="w-16 h-1.5 bg-black/5 dark:bg-white/10 rounded-full mt-2 relative overflow-hidden">
-                    <div 
-                        className="absolute inset-y-0 bg-gradient-to-r from-blue-400 to-red-400 rounded-full"
-                        style={{
-                            left: '20%', 
-                            right: '20%' 
-                        }} 
-                    />
+      <section className="glass-panel relative overflow-hidden rounded-3xl p-6 lg:p-8">
+        <div className="relative z-10 flex flex-col justify-between gap-8 md:flex-row md:items-center">
+            <div className="flex flex-col gap-2">
+                <h2 className="mt-2 text-7xl font-black tracking-tighter text-[#111618]">
+                  {formatTemperature(weather.current.temp)}
+                </h2>
+                <p className="text-2xl font-bold text-slate-700 capitalize">
+                  {formatWeatherDescription(weather.current.main, weather.current.description)}
+                </p>
+                <div className="mt-4 flex gap-4 text-sm font-medium text-slate-500">
+                    <span>최고: {formatTemperature(weather.today.tempMax)}</span>
+                    <span>최저: {formatTemperature(weather.today.tempMin)}</span>
                 </div>
-                <span>{Math.round(day.temp.max)}°</span>
-              </div>
             </div>
-          ))}
+            <div className="flex shrink-0 items-center justify-center">
+                <div className="relative size-40 md:size-48">
+                    <div className={`absolute inset-0 m-auto size-28 animate-pulse rounded-full blur-2xl opacity-60 ${currentVariant.glow}`}></div>
+                    
+                    <span 
+                      className={`material-symbols-outlined absolute inset-0 m-auto flex items-center justify-center text-[160px] drop-shadow-xl ${currentVariant.color}`}
+                      style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48" }}
+                    >
+                        {currentVariant.icon}
+                    </span>
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-6 transition-transform hover:-translate-y-1 h-44 justify-between bg-blue-50/50">
+            <div className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+                <span className="material-symbols-outlined">water_drop</span>
+            </div>
+            <div>
+                <span className="text-sm font-medium text-slate-500 mb-1 block">습도</span>
+                <p className="text-3xl font-bold text-[#111618]">{weather.current.humidity}%</p>
+            </div>
+        </div>
+        
+
+        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-6 transition-transform hover:-translate-y-1 h-44 justify-between bg-teal-50/50">
+            <div className="flex size-10 items-center justify-center rounded-full bg-teal-100 text-teal-500">
+                <span className="material-symbols-outlined">air</span>
+            </div>
+            <div>
+                <span className="text-sm font-medium text-slate-500 mb-1 block">바람</span>
+                <p className="text-3xl font-bold text-[#111618]">{weather.current.wind_speed}m/s</p>
+            </div>
+        </div>
+        
+
+        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-6 transition-transform hover:-translate-y-1 h-44 justify-between bg-slate-50/50">
+            <div className="flex size-10 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                <span className="material-symbols-outlined">light_mode</span>
+            </div>
+            <div>
+                <span className="text-sm font-medium text-slate-500 mb-1 block">자외선 지수</span>
+                <p className="text-3xl font-bold text-[#111618]">
+                  {weather.current.uvi} 
+                  <span className="text-lg font-medium ml-1 opacity-60 align-baseline">
+                    ({weather.current.uvi <= 2 ? '낮음' : weather.current.uvi <= 5 ? '보통' : '높음'})
+                  </span>
+                </p>
+            </div>
+        </div>
+        
+
+        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-6 transition-transform hover:-translate-y-1 h-44 justify-between bg-indigo-50/50">
+            <div className="flex size-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-500">
+                <span className="material-symbols-outlined">visibility</span>
+            </div>
+            <div>
+                <span className="text-sm font-medium text-slate-500 mb-1 block">가시거리</span>
+                <p className="text-3xl font-bold text-[#111618]">{(weather.current.visibility / 1000).toFixed(0)}km</p>
+            </div>
+        </div>
+      </section>
+
+      <section className="glass-panel w-full overflow-hidden rounded-3xl p-5">
+        <h4 className="mb-3 text-lg font-bold text-[#111618]">시간별 예보</h4>
+        <div className="flex w-full gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {weather.hourly?.slice(0, 24).map((hour: any, index: number) => {
+             const variant = getWeatherStyle(hour.weather?.[0]?.main);
+             return (
+                <div 
+                  key={hour.dt} 
+                  className={`flex min-w-[88px] flex-col items-center gap-4 rounded-3xl p-5 transition ${
+                    index === 0 
+                      ? 'bg-blue-100/50 border border-blue-200/50' 
+                      : 'hover:bg-white/40'
+                  }`}
+                >
+                  <span className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+                    {index === 0 ? '지금' : new Intl.DateTimeFormat('ko-KR', { hour: 'numeric', hour12: true }).format(new Date(hour.dt * 1000))}
+                  </span>
+                  <span className={`material-symbols-outlined text-3xl drop-shadow-sm ${variant.color}`}>
+                    {variant.icon}
+                  </span>
+                  <span className="text-lg font-bold text-[#111618]">{Math.round(hour.temp)}°</span>
+                </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="glass-panel w-full overflow-hidden rounded-3xl p-5">
+        <h4 className="mb-4 text-lg font-bold text-[#111618]">7일간 예보</h4>
+        <div className="grid grid-cols-2 lg:grid-cols-7 gap-3">
+          {weather.daily?.slice(0, 7).map((day: any, index: number) => {
+             const variant = getWeatherStyle(day.weather?.[0]?.main);
+             return (
+                <div key={day.dt} className="flex flex-col items-center gap-2 rounded-2xl bg-white/20 p-3 transition hover:bg-white/40">
+                  <span className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+                    {index === 0 ? '오늘' : new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(new Date(day.dt * 1000))}
+                  </span>
+                  <span className={`material-symbols-outlined text-3xl drop-shadow-sm ${variant.color}`}>
+                    {variant.icon}
+                  </span>
+                  <span className="text-lg font-bold text-[#111618]">{Math.round(day.temp.max)}°</span>
+                </div>
+             );
+          })}
         </div>
       </section>
     </main>
   );
 }
+
