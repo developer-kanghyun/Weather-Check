@@ -7,26 +7,33 @@ import { useTheme } from '@/shared/context/ThemeContext';
 import { type WeatherStatus } from '@/shared/lib/weather-theme';
 import { createLocation } from '@/entities/location';
 import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
+import { useLocationDisplay } from '@/entities/location/model/use-location-display';
+import { WeatherMetricsGrid } from '@/widgets/weather-metrics';
 
 export function DetailPage() {
   const { locationId } = useParams<{ locationId: string }>();
   const navigate = useNavigate();
   const { setWeatherStatus } = useTheme();
 
-
+  // URL 파라미터에서 위치 정보 추출 
   const searchParams = new URLSearchParams(window.location.search);
   const locationName = searchParams.get('name');
+  const fullAddress = searchParams.get('address');
   const lat = searchParams.get('lat');
   const lon = searchParams.get('lon');
 
-
-  const locationParts = (locationName || 'Unknown').split(/[\s-]+/).map(s => s.trim()).filter(Boolean);
+  // URL 정보를 기반으로 일시적인 Location 객체 생성
+  // [버그 수정] 별명이 아닌 실제 주소(fullAddress)를 기준으로 위치 객체를 복원해야 
+  // 내부 displayLabel 및 fullAddress가 별명으로 덮어씌워지는 것을 방지함
   const location = createLocation({
     id: locationId || 'unknown',
-    parts: locationParts,
+    parts: (fullAddress || locationName || 'Unknown').split(/[\s-]+/).map(s => s.trim()).filter(Boolean),
     originalName: locationName || undefined,
     position: lat && lon ? { lat: parseFloat(lat), lon: parseFloat(lon) } : undefined
   });
+
+  // 지명 및 주소 결정 로직을 통합 훅으로 관리
+  const { title: displayTitle, address: detailAddress } = useLocationDisplay(location);
 
   const { weather, position, isLoading, isError } = useLocationWeather(location);
 
@@ -71,7 +78,7 @@ export function DetailPage() {
         </button>
         
         <div className="flex items-center gap-3 px-2 flex-1 min-w-0">
-            <h1 className="text-xl lg:text-3xl font-extrabold text-[#111618] truncate">{locationName || 'Unknown Location'}</h1>
+            <h1 className="text-xl lg:text-3xl font-extrabold text-[#111618] truncate">{displayTitle}</h1>
             <FavoriteToggle location={location} position={position ?? null} className="flex-shrink-0" />
         </div>
       </header>
@@ -79,6 +86,9 @@ export function DetailPage() {
       <section className="glass-panel relative overflow-hidden rounded-3xl p-6 lg:p-8">
         <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
+                <span className="text-lg font-medium text-slate-500 mb-1">
+                  {detailAddress}
+                </span>
                 <h2 className="text-6xl md:text-7xl font-black tracking-tighter text-[#111618] tabular-nums">
                   {formatTemperature(weather.current.temp)}
                 </h2>
@@ -119,7 +129,7 @@ export function DetailPage() {
                       : 'hover:bg-white/40'
                   }`}
                 >
-                  <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+                  <span className={`text-sm md:text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
                     {index === 0 ? '지금' : new Intl.DateTimeFormat('ko-KR', { hour: 'numeric', hour12: true }).format(new Date(hour.dt * 1000))}
                   </span>
                   <span className={`material-symbols-outlined text-2xl md:text-3xl drop-shadow-sm ${variant.color}`}>
@@ -132,56 +142,7 @@ export function DetailPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-
-        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-5 lg:p-6 transition-transform hover:-translate-y-1 h-40 lg:h-44 justify-between bg-blue-50/50">
-            <div className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-500">
-                <span className="material-symbols-outlined">water_drop</span>
-            </div>
-            <div>
-                <span className="text-sm font-medium text-slate-500 mb-1 block">습도</span>
-                <p className="text-2xl lg:text-3xl font-bold text-[#111618] tabular-nums">{weather.current.humidity}%</p>
-            </div>
-        </div>
-        
-
-        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-5 lg:p-6 transition-transform hover:-translate-y-1 h-40 lg:h-44 justify-between bg-teal-50/50">
-            <div className="flex size-10 items-center justify-center rounded-full bg-teal-100 text-teal-500">
-                <span className="material-symbols-outlined">air</span>
-            </div>
-            <div>
-                <span className="text-sm font-medium text-slate-500 mb-1 block">바람</span>
-                <p className="text-2xl lg:text-3xl font-bold text-[#111618] tabular-nums">{Math.round(weather.current.wind_speed)}m/s</p>
-            </div>
-        </div>
-        
-
-        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-5 lg:p-6 transition-transform hover:-translate-y-1 h-40 lg:h-44 justify-between bg-slate-50/50">
-            <div className="flex size-10 items-center justify-center rounded-full bg-slate-200 text-slate-600">
-                <span className="material-symbols-outlined">light_mode</span>
-            </div>
-            <div>
-                <span className="text-sm font-medium text-slate-500 mb-1 block">자외선 지수</span>
-                <p className="text-2xl lg:text-3xl font-bold text-[#111618] tabular-nums">
-                  {weather.current.uvi} 
-                  <span className="text-base lg:text-lg font-medium ml-1 opacity-60 align-baseline">
-                    ({weather.current.uvi <= 2 ? '낮음' : weather.current.uvi <= 5 ? '보통' : '높음'})
-                  </span>
-                </p>
-            </div>
-        </div>
-        
-
-        <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-5 lg:p-6 transition-transform hover:-translate-y-1 h-40 lg:h-44 justify-between bg-indigo-50/50">
-            <div className="flex size-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-500">
-                <span className="material-symbols-outlined">visibility</span>
-            </div>
-            <div>
-                <span className="text-sm font-medium text-slate-500 mb-1 block">가시거리</span>
-                <p className="text-2xl lg:text-3xl font-bold text-[#111618] tabular-nums">{(weather.current.visibility / 1000).toFixed(0)}km</p>
-            </div>
-        </div>
-      </section>
+      <WeatherMetricsGrid current={weather.current} />
 
       <section className="glass-panel w-full overflow-hidden rounded-3xl p-5">
         <h4 className="mb-4 text-lg font-bold text-[#111618]">7일간 예보</h4>

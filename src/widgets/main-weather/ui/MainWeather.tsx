@@ -1,6 +1,5 @@
 import { useLocationWeather } from '@/features/weather-fetch';
 import { FavoriteToggle } from '@/features/favorite-toggle';
-import { useFavorites } from '@/features/favorite-manage';
 import type { Location } from '@/entities/location';
 import { formatWeatherDescription, formatTemperature } from '@/entities/weather/lib/weather-format';
 import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
@@ -9,23 +8,17 @@ interface MainWeatherProps {
   selectedLocation: Location | null;
 }
 
+import { useLocationDisplay } from '@/entities/location/model/use-location-display';
+
 export function MainWeather({ selectedLocation }: MainWeatherProps) {
   const { weather, position, isLoading, isError } = useLocationWeather(selectedLocation);
-  const { favorites } = useFavorites();
-  
-  const favorite = selectedLocation ? favorites.find(f => f.id === selectedLocation.id) : null;
-  const displayName = favorite ? favorite.name : (selectedLocation?.displayLabel || '');
-  const originalName = favorite ? favorite.originalName : (selectedLocation?.originalName || selectedLocation?.displayLabel);
-
-  const isCurrentLocation = selectedLocation?.id === 'current-location';
-  const displayTitle = isCurrentLocation ? '나의 위치' : displayName;
-  const subTitle = isCurrentLocation ? displayName : (originalName && displayName !== originalName ? originalName : null);
+  const { title, address, showAddress, isCurrentLocation } = useLocationDisplay(selectedLocation);
 
   const condition = weather?.current?.main || 'Clear';
   const variant = getWeatherStyle(condition);
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 overflow-y-auto z-10 animate-slide-up">
+    <main className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 z-10 animate-slide-up">
       <section className="w-full max-w-5xl flex flex-col items-center justify-center min-h-[500px]">
         {isLoading && (
           <div className="glass-panel p-16 rounded-[40px] text-center animate-pulse flex flex-col items-center gap-6 w-full max-w-2xl">
@@ -36,7 +29,7 @@ export function MainWeather({ selectedLocation }: MainWeatherProps) {
 
         {isError && (
           <div className="glass-panel p-10 rounded-[40px] text-center">
-             <p className="text-red-500 text-xl font-bold">정보 로드 실패</p>
+             <p className="text-red-500 text-xl font-bold">해당 장소의 정보가 제공되지 않습니다.</p>
           </div>
         )}
 
@@ -47,10 +40,16 @@ export function MainWeather({ selectedLocation }: MainWeatherProps) {
 
               <div className="relative z-10 flex flex-col gap-1 items-start text-left">
                   <div className="flex items-center gap-3 text-slate-700 mb-2 w-full">
-                       {isCurrentLocation && <span className="material-symbols-outlined text-[20px] lg:text-[24px] text-blue-500">my_location</span>}
-                       {!isCurrentLocation && <span className="material-symbols-outlined text-[20px] lg:text-[24px] text-slate-500">location_on</span>}
+                       {isCurrentLocation && (
+                         <span 
+                           className="material-symbols-outlined text-[24px] lg:text-[32px] text-blue-500"
+                           style={{ fontVariationSettings: "'wght' 600" }}
+                         >
+                           location_on
+                         </span>
+                       )}
                        <div className="flex items-center gap-3">
-                         <span className="text-lg lg:text-3xl font-bold tracking-tight">{displayTitle}</span>
+                         <span className="text-lg lg:text-3xl font-bold tracking-tight">{title}</span>
                          {!isCurrentLocation && (
                            <FavoriteToggle 
                              location={selectedLocation} 
@@ -59,9 +58,14 @@ export function MainWeather({ selectedLocation }: MainWeatherProps) {
                            />
                          )}
                        </div>
-                       {subTitle && <span className="text-sm lg:text-lg font-medium text-slate-500 hidden sm:inline-block">({subTitle})</span>}
                   </div>
                   
+                  {showAddress && (
+                    <span className="text-sm lg:text-base font-medium text-slate-500 mb-1">
+                      {address}
+                    </span>
+                  )}
+
                   <h2 className="text-[80px] lg:text-[100px] font-black tracking-tighter text-[#111618] leading-[0.9] -ml-2 lg:-ml-4 drop-shadow-sm tabular-nums">
                     {formatTemperature(weather.current.temp)}
                   </h2>
@@ -89,7 +93,6 @@ export function MainWeather({ selectedLocation }: MainWeatherProps) {
                   </div>
               </div>
             </div>
-
           </div>
         )}
       </section>

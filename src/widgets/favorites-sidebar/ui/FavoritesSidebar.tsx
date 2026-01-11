@@ -21,9 +21,9 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <aside className={`flex-shrink-0 glass-panel lg:rounded-[2rem] rounded-3xl p-4 lg:p-6 flex flex-col gap-6 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[80vh] flex-1' : 'max-h-[60px]'} lg:max-h-full w-full lg:w-80 lg:h-full`}>
+    <aside className={`flex-shrink-0 glass-panel lg:rounded-[2rem] rounded-3xl px-4 lg:p-6 flex flex-col lg:gap-6 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[80vh] flex-1 pb-4' : 'max-h-[60px]'} lg:max-h-full w-full lg:w-80 lg:h-full`}>
       <div 
-        className="flex items-center justify-center lg:justify-between cursor-pointer lg:cursor-default w-full lg:h-auto py-1" 
+        className="flex items-center justify-center lg:justify-between cursor-pointer lg:cursor-default w-full h-[60px] lg:h-auto flex-shrink-0" 
         onClick={() => setIsExpanded(!isExpanded)}
       >
         
@@ -65,7 +65,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                    if (!isEditingThis) {
                       onSelectLocation(createLocation({
                         id: favorite.id,
-                        parts: [favorite.name],
+                        parts: favorite.originalName.split(/[\s-]+/).map(s => s.trim()).filter(Boolean),
                         originalName: favorite.originalName,
                         position: { lat: favorite.lat, lon: favorite.lon },
                       }));
@@ -89,11 +89,11 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                   ) : (
                     <div className="flex items-center gap-1">
                       <div className="flex-1 min-w-0">
-                        <span className="font-bold text-sm text-[#111618] block truncate">
+                        <span className="font-bold text-[16px] text-[#111618] block truncate">
                           {shortName}
                         </span>
                         {showSubtitle && (
-                          <span className="text-xs text-slate-400 block truncate">
+                          <span className="text-[13px] font-medium text-slate-500 block truncate">
                             {shortOriginalName}
                           </span>
                         )}
@@ -129,7 +129,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                     </span>
                     <div className="flex gap-2 text-[12px] font-medium text-slate-500 justify-end tabular-nums">
                       <span>{favoriteWeather.today?.tempMax ?? '-'}°</span>
-                      <span className="text-slate-300 opacity-50">|</span>
+                      <span className="text-slate-400 font-bold">|</span>
                       <span>{favoriteWeather.today?.tempMin ?? '-'}°</span>
                     </div>
                   </div>
