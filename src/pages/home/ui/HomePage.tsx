@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { type Location, createLocation } from '@/entities/location';
 import { MainWeather } from '@/widgets/main-weather';
 import { useLocationWeather } from '@/features/weather-fetch';
@@ -11,7 +10,6 @@ import { useTheme } from '@/shared/context/ThemeContext';
 export function HomePage() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [hasInitialLocation, setHasInitialLocation] = useState(false);
-  const navigate = useNavigate();
   const { data: currentPosition } = useCurrentPosition();
   const { setWeatherStatus } = useTheme();
   
