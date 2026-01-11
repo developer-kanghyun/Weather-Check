@@ -18,19 +18,31 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
   const { favorites, remove } = useFavorites();
   const { weatherByLocationId } = useFavoritesWeather(favorites);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <aside className="w-80 h-full flex-shrink-0 glass-panel rounded-[2rem] p-6 flex flex-col gap-6 overflow-y-auto">
-      <h2 className="text-lg font-bold text-[#111618]">
-        즐겨찾는 지역
-      </h2>
+    <aside className={`flex-shrink-0 glass-panel lg:rounded-[2rem] rounded-3xl p-4 lg:p-6 flex flex-col gap-6 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[80vh] flex-1' : 'max-h-[60px]'} lg:max-h-full w-full lg:w-80 lg:h-full`}>
+      <div 
+        className="flex items-center justify-center lg:justify-between cursor-pointer lg:cursor-default w-full lg:h-auto py-1" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        
+        <h2 className="text-base lg:text-lg font-bold text-[#111618] flex items-center justify-center gap-2 w-full lg:w-auto">
+          즐겨찾는 지역
+        </h2>
+        
+        <span className={`lg:hidden material-symbols-outlined text-slate-500 absolute right-6 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+           expand_more
+        </span>
+      </div>
 
+      <div className={`flex flex-col gap-4 overflow-y-auto ${isExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-100'} transition-opacity duration-300 delay-100`}>
       {favorites.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2 opacity-60">
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2 opacity-60 min-h-[200px]">
           <p className="text-base text-center">즐겨찾는 지역을<br/>추가해보세요</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 pb-2">
           {favorites.map((favorite) => {
             const favoriteWeather = weatherByLocationId.get(favorite.id);
             const isSelected = selectedLocationId === favorite.id;
@@ -47,14 +59,19 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
               <div
                 key={favorite.id}
                 className={`group bg-white/50 p-3.5 rounded-2xl text-left transition-all cursor-pointer hover:bg-white/70 flex items-center gap-3 relative ${
-                  isSelected ? 'ring-2 ring-blue-500 bg-white/80' : ''
+                  isSelected ? 'ring-2 ring-inset ring-blue-400 bg-white/80' : ''
                 }`}
-                onClick={() => !isEditingThis && onSelectLocation(createLocation({
-                  id: favorite.id,
-                  parts: [favorite.name],
-                  originalName: favorite.originalName,
-                  position: { lat: favorite.lat, lon: favorite.lon },
-                }))}
+                onClick={() => {
+                   if (!isEditingThis) {
+                      onSelectLocation(createLocation({
+                        id: favorite.id,
+                        parts: [favorite.name],
+                        originalName: favorite.originalName,
+                        position: { lat: favorite.lat, lon: favorite.lon },
+                      }));
+                      setIsExpanded(false); // 모바일에서 선택 시 닫기
+                   }
+                }}
               >
                 <div className={`flex-shrink-0 flex items-center justify-center size-10 rounded-full ${style.bg} ${style.color}`}>
                   <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -82,7 +99,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
                         )}
                       </div>
                       
-                      <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0 transition-all">
+                      <div className="flex lg:hidden lg:group-hover:flex items-center gap-0.5 flex-shrink-0 transition-all">
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
@@ -122,6 +139,7 @@ export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: Favor
           })}
         </div>
       )}
+      </div>
     </aside>
   );
 }

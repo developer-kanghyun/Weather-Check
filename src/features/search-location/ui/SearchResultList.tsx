@@ -9,7 +9,7 @@ interface SearchResultListProps {
 export function SearchResultList({ results, onSelect, activeIndex }: SearchResultListProps) {
   if (results.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-2 p-5 text-center glass-panel bg-white/90 rounded-2xl shadow-lg z-50 border border-slate-200 text-slate-500 text-sm">
+      <div className="absolute top-full left-0 right-0 mt-2 p-4 text-center glass-panel bg-white/[0.98] backdrop-blur-lg rounded-2xl shadow-xl z-50 border border-slate-200 text-slate-700 text-xs font-bold leading-relaxed">
         해당 장소의 정보가 제공되지 않습니다.
       </div>
     );
@@ -17,16 +17,17 @@ export function SearchResultList({ results, onSelect, activeIndex }: SearchResul
 
   return (
     <ul 
-      className="absolute top-full left-0 right-0 mt-2 max-h-80 overflow-y-auto rounded-2xl glass-panel bg-white/90 shadow-lg z-50 border border-slate-200"
+      className="absolute top-full left-0 right-0 mt-2 max-h-80 overflow-y-auto rounded-3xl glass-panel bg-white/[0.98] backdrop-blur-lg shadow-2xl z-50 border border-slate-200 scrollbar-hide py-1.5"
     >
       {results.map((location, index) => {
+        const isSelected = index === activeIndex || (activeIndex === -1 && index === 0);
         return (
-          <li key={location.id}>
+          <li key={location.id} className="px-1.5">
             <button
               type="button"
               onClick={() => onSelect(location)}
-              className={`w-full px-5 py-3 text-left transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
-                index === activeIndex 
+              className={`w-full px-4 py-3 text-left transition-colors rounded-xl ${
+                isSelected 
                   ? 'bg-primary/20 text-primary' 
                   : 'text-slate-700 hover:bg-primary/10'
               }`}

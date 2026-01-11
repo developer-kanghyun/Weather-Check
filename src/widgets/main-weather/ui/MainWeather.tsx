@@ -41,48 +41,51 @@ export function MainWeather({ selectedLocation }: MainWeatherProps) {
         )}
 
         {weather && selectedLocation && (
-          <div className="flex flex-col gap-6 w-full max-w-5xl">
-            <div className="glass-panel relative overflow-hidden rounded-[50px] p-12 lg:p-20 w-full shadow-2xl backdrop-blur-xl border-white/40">
-              {!isCurrentLocation && (
-                <FavoriteToggle 
-                  location={selectedLocation} 
-                  position={position ?? null} 
-                  className="absolute top-10 right-10 z-20 scale-150" 
-                />
-              )}
+          <div className="flex flex-col gap-6 w-full max-w-5xl h-full justify-center">
+            <div className="glass-panel relative overflow-hidden rounded-[40px] p-8 lg:p-16 w-full shadow-2xl backdrop-blur-xl border-white/40 flex flex-col justify-between h-[60vh] lg:h-auto min-h-[400px]">
 
-              <div className="relative z-10 flex flex-col justify-between gap-12 lg:flex-row lg:items-center">
-                  <div className="flex flex-col gap-4">
-                      <div className="flex items-center gap-3 text-slate-700">
-                          {isCurrentLocation && <span className="material-symbols-outlined text-[32px] text-blue-500">my_location</span>}
-                          <span className="text-3xl lg:text-4xl font-extrabold tracking-tight">{displayTitle}</span>
-                      </div>
-                      {subTitle && <span className="text-xl font-medium text-slate-500">{subTitle}</span>}
-                      
-                      <h2 className="mt-4 text-[120px] lg:text-[100px] font-black tracking-tighter text-[#111618] leading-none">
-                        {formatTemperature(weather.current.temp)}
-                      </h2>
-                      <p className="text-3xl lg:text-4xl font-bold text-slate-700 capitalize">
-                        {formatWeatherDescription(weather.current.main, weather.current.description)}
-                      </p>
-                      <div className="mt-8 flex gap-8 text-xl lg:text-2xl font-bold text-slate-500 bg-white/40 py-3 px-8 rounded-full w-fit">
-                          <span>최고 {formatTemperature(weather.today.tempMax)}</span>
-                          <span className="w-px h-8 bg-slate-300 self-center" />
-                          <span>최저 {formatTemperature(weather.today.tempMin)}</span>
-                      </div>
+
+              <div className="relative z-10 flex flex-col gap-1 items-start text-left">
+                  <div className="flex items-center gap-3 text-slate-700 mb-2 w-full">
+                       {isCurrentLocation && <span className="material-symbols-outlined text-[20px] lg:text-[24px] text-blue-500">my_location</span>}
+                       {!isCurrentLocation && <span className="material-symbols-outlined text-[20px] lg:text-[24px] text-slate-500">location_on</span>}
+                       <div className="flex items-center gap-3">
+                         <span className="text-lg lg:text-3xl font-bold tracking-tight">{displayTitle}</span>
+                         {!isCurrentLocation && (
+                           <FavoriteToggle 
+                             location={selectedLocation} 
+                             position={position ?? null} 
+                             className="scale-90 lg:scale-100" 
+                           />
+                         )}
+                       </div>
+                       {subTitle && <span className="text-sm lg:text-lg font-medium text-slate-500 hidden sm:inline-block">({subTitle})</span>}
                   </div>
+                  
+                  <h2 className="text-[80px] lg:text-[100px] font-black tracking-tighter text-[#111618] leading-[0.9] -ml-2 lg:-ml-4 drop-shadow-sm tabular-nums">
+                    {formatTemperature(weather.current.temp)}
+                  </h2>
+                  
+                  <p className="text-2xl lg:text-4xl font-bold text-slate-700 capitalize mt-2">
+                    {formatWeatherDescription(weather.current.main, weather.current.description)}
+                  </p>
 
-                  <div className="flex shrink-0 items-center justify-center">
-                      <div className="relative size-64 lg:size-96">
-                          <div className={`absolute inset-0 m-auto size-48 animate-pulse rounded-full blur-3xl opacity-60 ${variant.glow}`}></div>
-                          
-                          <span 
-                            className={`material-symbols-outlined absolute inset-0 m-auto flex items-center justify-center text-[150px] lg:text-[150px] drop-shadow-2xl ${variant.color}`}
-                            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48" }}
-                          >
-                              {variant.icon}
-                          </span>
-                      </div>
+                  <div className="mt-4 flex gap-3 text-base lg:text-xl font-medium text-slate-500 tabular-nums">
+                      <span>최고: {formatTemperature(weather.today.tempMax)}</span>
+                      <span>최저: {formatTemperature(weather.today.tempMin)}</span>
+                  </div>
+              </div>
+
+              <div className="absolute -bottom-10 -right-10 lg:bottom-10 lg:right-20 flex shrink-0 items-center justify-center pointer-events-none">
+                  <div className="relative size-64 lg:size-96">
+                      <div className={`absolute inset-0 m-auto size-48 lg:size-72 animate-pulse rounded-full blur-3xl opacity-50 ${variant.glow}`}></div>
+                      
+                      <span 
+                        className={`material-symbols-outlined absolute inset-0 m-auto flex items-center justify-center text-[200px] lg:text-[300px] drop-shadow-2xl ${variant.color}`}
+                        style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48" }}
+                      >
+                          {variant.icon}
+                      </span>
                   </div>
               </div>
             </div>

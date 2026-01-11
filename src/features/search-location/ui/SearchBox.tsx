@@ -8,7 +8,7 @@ interface SearchBoxProps {
   placeholder?: string;
 }
 
-export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하세요...' }: SearchBoxProps) {
+export function SearchBox({ onSelect, placeholder = '지역을 검색하세요' }: SearchBoxProps) {
   const { query, setQuery, results } = useLocationSearch();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -26,7 +26,7 @@ export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하�
   }, []);
 
   useEffect(() => {
-    setActiveIndex(results.length > 0 ? 0 : -1);
+    setActiveIndex(-1);
   }, [results]);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -42,7 +42,6 @@ export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하�
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    // 한글 조합 중 Enter 중복 이벤트 방지
     if ((isComposing || e.nativeEvent.isComposing) && e.key === 'Enter') return;
 
     if (!isOpen) {
@@ -57,12 +56,13 @@ export function SearchBox({ onSelect, placeholder = '도시 이름을 검색하�
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setActiveIndex(prev => (prev > 0 ? prev - 1 : prev));
+        setActiveIndex(prev => (prev > -1 ? prev - 1 : prev));
         break;
       case 'Enter':
         e.preventDefault();
-        if (activeIndex >= 0 && results[activeIndex]) {
-          handleSelect(results[activeIndex]);
+        const targetIdx = activeIndex >= 0 ? activeIndex : 0;
+        if (results[targetIdx]) {
+          handleSelect(results[targetIdx]);
         }
         break;
       case 'Escape':

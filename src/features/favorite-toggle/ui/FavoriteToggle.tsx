@@ -25,15 +25,15 @@ export function FavoriteToggle({ location, position, className = '' }: FavoriteT
     <button
       onClick={handleClick}
       disabled={!position}
-      className={`p-2 rounded-full transition-all ${
+      className={`size-10 flex items-center justify-center rounded-full transition-all ${
         isActive 
-          ? 'text-yellow-500 bg-yellow-500/10' 
-          : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
+          ? 'text-pink-500 hover:bg-pink-800/20 hover:shadow-sm hover:backdrop-blur-sm' 
+          : 'text-[#101618] hover:bg-black/5'
       } ${!position ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
       title={isActive ? '즐겨찾기 삭제' : '즐겨찾기 추가'}
     >
-      <span className={`material-symbols-outlined ${isActive ? 'fill-1' : ''}`}>
-        {isActive ? 'star' : 'star_border'}
+      <span className={`material-symbols-outlined ${isActive ? 'fill-1' : ''}`} style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}>
+        {isActive ? 'favorite' : 'favorite'}
       </span>
     </button>
   );
