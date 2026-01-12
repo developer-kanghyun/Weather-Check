@@ -11,7 +11,7 @@ export interface Hourly {
     description: string;
     icon: string;
   }>;
-  pop: number; // 강수 확률
+  pop: number;
 }
 
 export interface Daily {
