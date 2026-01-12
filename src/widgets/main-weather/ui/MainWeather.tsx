@@ -18,8 +18,8 @@ export const MainWeather = ({ selectedLocation }: MainWeatherProps) => {
   const variant = getWeatherStyle(condition);
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 z-10 animate-slide-up">
-      <section className="w-full max-w-5xl flex flex-col items-center justify-center min-h-[500px]">
+    <main className="flex-1 flex flex-col items-center justify-center p-4 lg:p-12 z-10 animate-slide-up">
+      <section className="w-full max-w-5xl flex flex-col items-center justify-center min-h-0 lg:min-h-[500px]">
         {isLoading && (
           <div className="glass-panel p-16 rounded-[40px] text-center animate-pulse flex flex-col items-center gap-6 w-full max-w-2xl">
             <span className="material-symbols-outlined text-6xl text-slate-400">cloud</span>
@@ -35,7 +35,7 @@ export const MainWeather = ({ selectedLocation }: MainWeatherProps) => {
 
         {weather && selectedLocation && (
           <div className="flex flex-col gap-6 w-full max-w-5xl h-full justify-center">
-            <div className="glass-panel relative overflow-hidden rounded-[40px] p-8 lg:p-16 w-full shadow-2xl backdrop-blur-xl border-white/40 flex flex-col justify-between h-[60vh] lg:h-auto min-h-[400px]">
+            <div className="glass-panel relative overflow-hidden rounded-[40px] p-6 lg:p-16 w-full shadow-2xl backdrop-blur-xl border-white/40 flex flex-col justify-between h-[58dvh] lg:h-auto min-h-[380px] lg:min-h-[400px]">
 
 
               <div className="relative z-10 flex flex-col gap-1 items-start text-left">
