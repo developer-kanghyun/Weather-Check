@@ -8,9 +8,9 @@ interface MainWeatherProps {
   selectedLocation: Location | null;
 }
 
-import { useLocationDisplay } from '@/entities/location/model/use-location-display';
+import { useLocationDisplay } from '@/features/location-display';
 
-export function MainWeather({ selectedLocation }: MainWeatherProps) {
+export const MainWeather = ({ selectedLocation }: MainWeatherProps) => {
   const { weather, position, isLoading, isError } = useLocationWeather(selectedLocation);
   const { title, address, showAddress, isCurrentLocation } = useLocationDisplay(selectedLocation);
 

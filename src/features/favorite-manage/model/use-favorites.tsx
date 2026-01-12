@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import toast from 'react-hot-toast';
 import { type Favorite, getFavorites, addFavorite, removeFavorite, updateFavorite } from '@/entities/favorite';
 import type { Location } from '@/entities/location';
 
@@ -13,7 +14,7 @@ interface FavoritesContextValue {
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
-export function FavoritesProvider({ children }: { children: ReactNode }) {
+export const FavoritesProvider = ({ children }: { children: ReactNode }) => {
   const [favorites, setFavorites] = useState<Favorite[]>(() => getFavorites());
 
 
@@ -21,15 +22,21 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     return favorites.some((f) => f.id === id);
   }, [favorites]);
 
+  const remove = useCallback((id: string) => {
+    setFavorites(prev => prev.filter(f => f.id !== id));
+    removeFavorite(id);
+    toast.success('즐겨찾기에서 제거되었습니다.');
+  }, []);
+
   // 이름 변경 시에도 날씨 조회가 가능하도록 좌표 저장
   const toggleFavorite = useCallback((location: Location, position: { lat: number; lon: number }) => {
     if (isFavorite(location.id)) {
-      setFavorites(prev => prev.filter(f => f.id !== location.id));
-      removeFavorite(location.id);
+      remove(location.id);
       return { success: true, action: 'removed' as const };
     }
 
     if (favorites.length >= 6) {
+      toast.error('즐겨찾기는 최대 6개까지 가능합니다.');
       return { success: false, error: '즐겨찾기는 최대 6개까지 가능합니다.' };
     }
 
@@ -43,8 +50,9 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
     setFavorites(prev => [...prev, newFavorite]);
     addFavorite(newFavorite);
+    toast.success(`즐겨찾기에 추가되었습니다.`);
     return { success: true, action: 'added' as const };
-  }, [favorites.length, isFavorite]);
+  }, [favorites.length, isFavorite, remove]);
 
   const renameFavorite = useCallback((id: string, newName: string) => {
     const trimmedName = newName.trim();
@@ -54,12 +62,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       f.id === id ? { ...f, name: trimmedName } : f
     ));
     updateFavorite(id, { name: trimmedName });
+    toast.success('별명이 변경되었습니다.');
     return { success: true };
-  }, []);
-
-  const remove = useCallback((id: string) => {
-    setFavorites(prev => prev.filter(f => f.id !== id));
-    removeFavorite(id);
   }, []);
 
   return (
@@ -76,7 +80,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useFavorites() {
+export const useFavorites = () => {
   const context = useContext(FavoritesContext);
   if (!context) {
     throw new Error('useFavorites는 FavoritesProvider 내부에서 사용 가능.');

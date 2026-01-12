@@ -6,7 +6,7 @@ interface SearchResultListProps {
   activeIndex: number;
 }
 
-export function SearchResultList({ results, onSelect, activeIndex }: SearchResultListProps) {
+export const SearchResultList = ({ results, onSelect, activeIndex }: SearchResultListProps) => {
   if (results.length === 0) {
     return (
       <div className="absolute top-full left-0 right-0 mt-2 p-4 text-center glass-panel bg-white/[0.98] backdrop-blur-lg rounded-2xl shadow-xl z-50 border border-slate-200 text-slate-700 text-xs font-bold leading-relaxed">

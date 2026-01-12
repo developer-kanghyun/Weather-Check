@@ -1,9 +1,9 @@
 import type { OneCallWeatherResponse } from '@/shared/api/weather';
-import type { NormalizedWeather } from '../model/types';
+import type { Weather } from '../model/types';
 
 const HOURLY_COUNT = 24;
 
-export function normalizeOneCall(raw: OneCallWeatherResponse): NormalizedWeather | null {
+export const normalizeOneCall = (raw: OneCallWeatherResponse): Weather | null => {
   const { current, daily, hourly } = raw;
 
   if (!current || !daily?.[0]) {
@@ -16,6 +16,7 @@ export function normalizeOneCall(raw: OneCallWeatherResponse): NormalizedWeather
   return {
     current: {
       temp: Math.round(current.temp),
+      feels_like: Math.round(current.feels_like ?? current.temp),
       description: currentWeather?.description ?? '',
       icon: currentWeather?.icon ?? '01d',
       main: currentWeather?.main ?? 'Clear',
@@ -31,17 +32,21 @@ export function normalizeOneCall(raw: OneCallWeatherResponse): NormalizedWeather
     hourly: (hourly ?? []).slice(0, HOURLY_COUNT).map((h) => ({
       dt: h.dt,
       temp: Math.round(h.temp),
-      icon: h.weather?.[0]?.icon ?? '01d',
-      main: h.weather?.[0]?.main ?? 'Clear',
-      weather: h.weather,
+      weather: h.weather ?? [],
+      pop: h.pop ?? 0,
     })),
     daily: (daily ?? []).map((d) => ({
       dt: d.dt,
       temp: {
-        min: d.temp.min,
-        max: d.temp.max,
+        min: Math.round(d.temp.min),
+        max: Math.round(d.temp.max),
+        day: Math.round(d.temp.day ?? 0),
+        night: Math.round(d.temp.night ?? 0),
+        eve: Math.round(d.temp.eve ?? 0),
+        morn: Math.round(d.temp.morn ?? 0),
       },
       weather: d.weather ?? [],
+      pop: d.pop ?? 0,
     })),
   };
 }

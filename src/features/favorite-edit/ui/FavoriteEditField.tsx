@@ -7,7 +7,7 @@ interface FavoriteEditFieldProps {
   onEditingChange?: (isEditing: boolean) => void;
 }
 
-export function FavoriteEditField({ favoriteId, currentName, onSuccess, onEditingChange }: FavoriteEditFieldProps) {
+export const FavoriteEditField = ({ favoriteId, currentName, onSuccess, onEditingChange }: FavoriteEditFieldProps) => {
   const {
     name,
     setName,

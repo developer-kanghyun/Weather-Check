@@ -9,7 +9,7 @@ interface ResolveParams {
 }
 
 // API 응답 데이터를 기반으로 보정된 Location 객체를 반환
-export function resolveLocationFromApi(params: ResolveParams): Location {
+export const resolveLocationFromApi = (params: ResolveParams): Location => {
   const { koName, state, locationIndex, position } = params;
 
   const matched = locationIndex.find(loc => 

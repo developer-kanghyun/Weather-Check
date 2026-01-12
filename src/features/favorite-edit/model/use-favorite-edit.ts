@@ -7,7 +7,7 @@ interface UseFavoriteEditProps {
   onComplete?: () => void;
 }
 
-export function useFavoriteEdit({ favoriteId, initialName, onComplete }: UseFavoriteEditProps) {
+export const useFavoriteEdit = ({ favoriteId, initialName, onComplete }: UseFavoriteEditProps) => {
   const [name, setName] = useState(initialName);
   const { renameFavorite } = useFavorites();
 

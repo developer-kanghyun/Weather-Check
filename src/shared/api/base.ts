@@ -24,7 +24,7 @@ export class HttpError extends Error {
   }
 }
 
-function buildUrl(baseUrl: string, path: string, query?: RequestOptions['query']) {
+const buildUrl = (baseUrl: string, path: string, query?: RequestOptions['query']): string => {
   const url = new URL(path, baseUrl);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
@@ -35,7 +35,7 @@ function buildUrl(baseUrl: string, path: string, query?: RequestOptions['query']
   return url.toString();
 }
 
-export async function requestJson<T>(options: RequestOptions): Promise<T> {
+export const requestJson = async <T,>(options: RequestOptions): Promise<T> => {
   const {
     method = 'GET',
     baseUrl = '',

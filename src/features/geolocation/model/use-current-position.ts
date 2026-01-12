@@ -5,7 +5,7 @@ interface Position {
   lon: number;
 }
 
-function getCurrentPosition(): Promise<Position> {
+const getCurrentPosition = (): Promise<Position> => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       reject(new Error('이 브라우저는 위치 정보를 지원하지 않습니다.'));
@@ -31,7 +31,7 @@ function getCurrentPosition(): Promise<Position> {
   });
 }
 
-export function useCurrentPosition() {
+export const useCurrentPosition = () => {
   return useQuery({
     queryKey: ['currentPosition'],
     queryFn: getCurrentPosition,

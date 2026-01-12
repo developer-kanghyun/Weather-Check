@@ -4,7 +4,7 @@ import { locationIndex } from '../lib/location-index';
 
 const MAX_RESULTS = 20;
 
-function calculateScore(loc: Location, normalizedQuery: string, searchKeywords: string[]): number {
+const calculateScore = (loc: Location, normalizedQuery: string, searchKeywords: string[]): number => {
   const partsLower = loc.parts.map(p => p.toLowerCase());
   const matchCount = searchKeywords.filter(k => partsLower.some(p => p.includes(k))).length;
   
@@ -41,7 +41,7 @@ function calculateScore(loc: Location, normalizedQuery: string, searchKeywords: 
   return score;
 }
 
-function searchLocations(query: string): Location[] {
+const searchLocations = (query: string): Location[] => {
   const rawQuery = query.trim().toLowerCase();
   if (!rawQuery) return [];
 
@@ -56,7 +56,7 @@ function searchLocations(query: string): Location[] {
     .map((item) => item.loc);
 }
 
-export function useLocationSearch() {
+export const useLocationSearch = () => {
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => searchLocations(query), [query]);

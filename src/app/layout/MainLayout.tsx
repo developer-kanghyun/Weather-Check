@@ -6,7 +6,7 @@ import type { Location } from '@/entities/location';
 import { useFavorites } from '@/features/favorite-manage';
 import { AppHeader } from '@/widgets/app-header';
 
-export function MainLayout() {
+export const MainLayout = () => {
   const { weatherStatus } = useTheme();
   const { locationId } = useParams<{ locationId: string }>();
   const location = useLocation();
@@ -16,7 +16,7 @@ export function MainLayout() {
 
   const isHomePage = location.pathname === '/';
 
-  function handleSelectLocation(location: Location) {
+  const handleSelectLocation = (location: Location) => {
     const favorite = favorites.find(f => f.id === location.id);
     const title = favorite?.name || location.displayLabel;
     

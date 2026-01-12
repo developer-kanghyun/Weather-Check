@@ -1,7 +1,7 @@
 import type { Location } from '../model/types';
 import { createLocation } from './create-location';
 
-export function parseRawLocation(raw: string): Location {
+export const parseRawLocation = (raw: string): Location => {
   const parts = raw.split('-').map((s) => s.trim()).filter(Boolean);
   return createLocation({
     id: raw,

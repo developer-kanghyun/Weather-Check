@@ -8,7 +8,7 @@ interface SearchBoxProps {
   placeholder?: string;
 }
 
-export function SearchBox({ onSelect, placeholder = '지역을 검색하세요' }: SearchBoxProps) {
+export const SearchBox = ({ onSelect, placeholder = '지역을 검색하세요' }: SearchBoxProps) => {
   const { query, setQuery, results } = useLocationSearch();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -16,7 +16,7 @@ export function SearchBox({ onSelect, placeholder = '지역을 검색하세요' 
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -29,19 +29,19 @@ export function SearchBox({ onSelect, placeholder = '지역을 검색하세요' 
     setActiveIndex(-1);
   }, [results]);
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setIsOpen(true);
   }
 
-  function handleSelect(location: Location) {
+  const handleSelect = (location: Location) => {
     onSelect(location);
     setQuery('');
     setIsOpen(false);
     setActiveIndex(-1);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if ((isComposing || e.nativeEvent.isComposing) && e.key === 'Enter') return;
 
     if (!isOpen) {

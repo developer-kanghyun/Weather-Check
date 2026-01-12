@@ -4,7 +4,7 @@ import { reverseGeocode } from '@/shared/api/weather';
 import { useCurrentPosition } from './use-current-position';
 import { locationIndex } from '@/features/search-location/lib/location-index';
 
-export function useCurrentLocation() {
+export const useCurrentLocation = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -13,7 +13,7 @@ export function useCurrentLocation() {
   useEffect(() => {
     let isCancelled = false;
 
-    async function init() {
+    const init = async () => {
       if (!currentPosition) return;
       
       setIsLoading(true);

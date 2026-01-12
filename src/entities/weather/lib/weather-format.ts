@@ -7,7 +7,7 @@ const correctionMap: Record<string, string> = {
   '연무': '안개',
 };
 
-export function formatWeatherDescription(main: string | undefined, description?: string): string {
+export const formatWeatherDescription = (main: string | undefined, description?: string): string => {
   if (description && correctionMap[description]) {
     return correctionMap[description];
   }
@@ -15,7 +15,7 @@ export function formatWeatherDescription(main: string | undefined, description?:
 }
 
 // 온도는 정수로 표기
-export function formatTemperature(temp: number | undefined): string {
+export const formatTemperature = (temp: number | undefined): string => {
   if (temp === undefined || temp === null) return '-';
   return `${Math.round(temp)}°`;
 }

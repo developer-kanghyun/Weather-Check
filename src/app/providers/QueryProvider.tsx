@@ -14,7 +14,7 @@ interface Props {
   children: ReactNode
 }
 
-export function QueryProvider({ children }: Props) {
+export const QueryProvider = ({ children }: Props) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}

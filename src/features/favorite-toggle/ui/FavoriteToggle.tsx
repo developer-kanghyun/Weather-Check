@@ -7,7 +7,7 @@ interface FavoriteToggleProps {
   className?: string;
 }
 
-export function FavoriteToggle({ location, position, className = '' }: FavoriteToggleProps) {
+export const FavoriteToggle = ({ location, position, className = '' }: FavoriteToggleProps) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const isActive = isFavorite(location.id);
 
@@ -15,10 +15,7 @@ export function FavoriteToggle({ location, position, className = '' }: FavoriteT
     e.stopPropagation();
     if (!position) return;
     
-    const result = toggleFavorite(location, position);
-    if (!result.success) {
-      alert(result.error);
-    }
+    toggleFavorite(location, position);
   };
 
   return (

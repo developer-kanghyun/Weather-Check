@@ -7,7 +7,7 @@ interface WeatherMetricsGridProps {
   };
 }
 
-export function WeatherMetricsGrid({ current }: WeatherMetricsGridProps) {
+export const WeatherMetricsGrid = ({ current }: WeatherMetricsGridProps) => {
   return (
     <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
       <div className="glass-panel flex flex-col items-start gap-3 rounded-3xl p-5 lg:p-6 transition-transform hover:-translate-y-1 h-40 lg:h-44 justify-between bg-blue-50/50">

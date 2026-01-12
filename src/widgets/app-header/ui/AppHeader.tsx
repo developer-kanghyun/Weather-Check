@@ -6,7 +6,7 @@ interface AppHeaderProps {
   onSelectLocation: (location: Location) => void;
 }
 
-export function AppHeader({ onSelectLocation }: AppHeaderProps) {
+export const AppHeader = ({ onSelectLocation }: AppHeaderProps) => {
   const navigate = useNavigate();
 
   return (

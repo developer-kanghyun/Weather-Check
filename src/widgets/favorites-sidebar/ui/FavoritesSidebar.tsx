@@ -5,7 +5,7 @@ import { FavoriteEditField } from '@/features/favorite-edit';
 import { type Location, createLocation } from '@/entities/location';
 import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
 
-function formatLocationName(name: string): string {
+const formatLocationName = (name: string): string => {
   return name.split(/[\s-]+/).pop() ?? name;
 }
 
@@ -14,7 +14,7 @@ interface FavoritesSidebarProps {
   selectedLocationId?: string;
 }
 
-export function FavoritesSidebar({ onSelectLocation, selectedLocationId }: FavoritesSidebarProps) {
+export const FavoritesSidebar = ({ onSelectLocation, selectedLocationId }: FavoritesSidebarProps) => {
   const { favorites, remove } = useFavorites();
   const { weatherByLocationId } = useFavoritesWeather(favorites);
   const [editingId, setEditingId] = useState<string | null>(null);

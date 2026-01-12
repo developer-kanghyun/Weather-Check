@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { getLocation, fetchOneCall } from '@/shared/api/weather';
-import { normalizeOneCall, type NormalizedWeather } from '@/entities/weather';
+import { normalizeOneCall, type Weather } from '@/entities/weather';
 import type { Location } from '@/entities/location';
 
-export function useLocationWeather(location: Location | null) {
+export const useLocationWeather = (location: Location | null) => {
   const geocodeQuery = useQuery({
     queryKey: ['geocode', location?.fullAddress],
     queryFn: async () => {
@@ -23,7 +23,7 @@ export function useLocationWeather(location: Location | null) {
 
   const weatherQuery = useQuery({
     queryKey: ['weather', position?.lat, position?.lon],
-    queryFn: async (): Promise<NormalizedWeather | null> => {
+    queryFn: async (): Promise<Weather | null> => {
       if (!position) return null;
       const raw = await fetchOneCall({ lat: position.lat, lon: position.lon });
       return normalizeOneCall(raw);

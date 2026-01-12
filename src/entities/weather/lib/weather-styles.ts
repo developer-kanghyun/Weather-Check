@@ -51,6 +51,6 @@ const weatherStyleMap: Record<string, WeatherStyle> = {
   },
 };
 
-export function getWeatherStyle(condition: string): WeatherStyle {
+export const getWeatherStyle = (condition: string): WeatherStyle => {
   return weatherStyleMap[condition] || weatherStyleMap.Default;
 }

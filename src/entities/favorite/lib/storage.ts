@@ -3,7 +3,7 @@ import type { Favorite } from '../model/types';
 const STORAGE_KEY = 'weather-favorites';
 const MAX_FAVORITES = 6;
 
-export function getFavorites(): Favorite[] {
+export const getFavorites = (): Favorite[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -13,11 +13,11 @@ export function getFavorites(): Favorite[] {
   }
 }
 
-function saveFavorites(favorites: Favorite[]): void {
+const saveFavorites = (favorites: Favorite[]): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
 }
 
-export function addFavorite(favorite: Favorite): boolean {
+export const addFavorite = (favorite: Favorite): boolean => {
   const current = getFavorites();
   
   // Location ID 기반 중복 체크 (같은 지역 다시 추가 방지)
@@ -31,12 +31,12 @@ export function addFavorite(favorite: Favorite): boolean {
   return true;
 }
 
-export function removeFavorite(id: string): void {
+export const removeFavorite = (id: string): void => {
   const current = getFavorites();
   saveFavorites(current.filter((f) => f.id !== id));
 }
 
-export function updateFavorite(id: string, updates: Partial<Omit<Favorite, 'id'>>): void {
+export const updateFavorite = (id: string, updates: Partial<Omit<Favorite, 'id'>>): void => {
   const current = getFavorites();
   const index = current.findIndex((f) => f.id === id);
   if (index === -1) return;
