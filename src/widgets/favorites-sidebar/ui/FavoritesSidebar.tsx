@@ -43,7 +43,7 @@ export const FavoritesSidebar = ({ onSelectLocation, selectedLocationId }: Favor
         </span>
       </div>
 
-      <div className={`flex flex-col gap-4 overflow-y-auto ${isExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-100'} transition-opacity duration-300 delay-100`}>
+      <div className={`flex flex-col gap-4 overflow-y-auto scrollbar-hide ${isExpanded ? 'opacity-100' : 'pointer-events-none h-0 opacity-0 lg:opacity-100 lg:pointer-events-auto lg:h-auto'} transition-all duration-300 delay-100`}>
       {favorites.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2 opacity-60 min-h-[80px] lg:min-h-[200px]">
           <p className="text-base lg:text-base text-center font-medium">

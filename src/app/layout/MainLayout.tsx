@@ -32,7 +32,7 @@ export const MainLayout = () => {
 
   // 배경을 전역으로 관리하여 페이지 전환 시 깜빡임 방지
   return (
-    <div className="flex flex-col h-screen relative overflow-hidden text-[#111618] dark:text-white gap-2">
+    <div className="flex flex-col h-[100dvh] relative overflow-hidden text-[#111618] dark:text-white gap-2">
       <div 
         className="fixed inset-0 bg-cover bg-fixed bg-no-repeat transition-all duration-1000 pointer-events-none"
         style={{ backgroundImage: `url('${theme.backgroundImage}')` }}
@@ -43,7 +43,7 @@ export const MainLayout = () => {
 
       <AppHeader onSelectLocation={handleSelectLocation} />
 
-      <div className={`relative z-10 flex flex-col lg:flex-row flex-1 w-full overflow-hidden px-6 pb-6 lg:gap-6 ${isHomePage ? 'gap-8' : 'gap-3'}`}>
+      <div className={`relative z-10 flex flex-col lg:flex-row flex-1 w-full overflow-hidden px-6 pb-6 lg:gap-6 ${isHomePage ? 'gap-6' : 'gap-3'}`}>
         <FavoritesSidebar 
           onSelectLocation={handleSelectLocation}
           selectedLocationId={locationId} 
