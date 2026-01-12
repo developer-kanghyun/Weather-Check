@@ -2,17 +2,17 @@ import { requestJson } from '@/shared/api/base';
 
 const baseUrl = 'https://api.openweathermap.org';
 
-function getApiKey() {
+const getApiKey = () => {
   const key = import.meta.env.VITE_OPENWEATHER_API_KEY;
   if (!key) throw new Error('환경변수 VITE_OPENWEATHER_API_KEY가 설정되지 않았습니다.');
   return key;
 }
 
-function callWeatherApi<T>(
+const callWeatherApi = <T,>(
   path: string,
   query: Record<string, string | number | boolean>,
   signal?: AbortSignal
-) {
+) => {
   return requestJson<T>({
     baseUrl,
     path,
@@ -21,16 +21,16 @@ function callWeatherApi<T>(
   });
 }
 
-export type GeocodingResult = {
+export interface GeocodeResponse {
   name: string;
   lat: number;
   lon: number;
   country: string;
   state?: string;
   local_names?: Record<string, string>;
-};
+}
 
-export type OneCallWeatherResponse = {
+export interface OneCallWeatherResponse {
   lat: number;
   lon: number;
   timezone?: string;
@@ -38,23 +38,33 @@ export type OneCallWeatherResponse = {
   current?: {
     dt: number;
     temp: number;
+    feels_like?: number;
     humidity?: number;
     wind_speed?: number;
     uvi?: number;
     visibility?: number;
-    weather?: Array<{ main: string; description: string; icon: string }>;
+    weather?: Array<{ id: number; main: string; description: string; icon: string }>;
   };
   hourly?: Array<{
     dt: number;
     temp: number;
-    weather?: Array<{ main: string; description: string; icon: string }>;
+    weather?: Array<{ id: number; main: string; description: string; icon: string }>;
+    pop?: number;
   }>;
   daily?: Array<{
     dt: number;
-    temp: { min: number; max: number; day?: number };
-    weather?: Array<{ main: string; description: string; icon: string }>;
+    temp: { 
+      min: number; 
+      max: number; 
+      day?: number; 
+      night?: number; 
+      eve?: number; 
+      morn?: number; 
+    };
+    weather?: Array<{ id: number; main: string; description: string; icon: string }>;
+    pop?: number;
   }>;
-};
+}
 
 const regions: Record<string, { lat: number; lon: number }> = {
   '강원특별자치도': { lat: 37.8854, lon: 127.7298 },
@@ -69,33 +79,33 @@ const regions: Record<string, { lat: number; lon: number }> = {
   '세종특별자치시': { lat: 36.4800, lon: 127.2890 },
 };
 
-export async function geocodeDirect(params: {
+export const geocodeDirect = async (params: {
   q: string;
   limit?: number;
   signal?: AbortSignal;
-}) {
+}) => {
   const { q, limit = 5, signal } = params;
-  return callWeatherApi<GeocodingResult[]>('/geo/1.0/direct', { q, limit }, signal);
+  return callWeatherApi<GeocodeResponse[]>('/geo/1.0/direct', { q, limit }, signal);
 }
 
-export async function reverseGeocode(params: {
+export const reverseGeocode = async (params: {
   lat: number;
   lon: number;
   limit?: number;
   signal?: AbortSignal;
-}) {
+}) => {
   const { lat, lon, limit = 1, signal } = params;
-  return callWeatherApi<GeocodingResult[]>('/geo/1.0/reverse', { lat, lon, limit }, signal);
+  return callWeatherApi<GeocodeResponse[]>('/geo/1.0/reverse', { lat, lon, limit }, signal);
 }
 
-export async function fetchOneCall(params: {
+export const fetchOneCall = async (params: {
   lat: number;
   lon: number;
   units?: 'standard' | 'metric' | 'imperial';
   lang?: string;
   exclude?: string;
   signal?: AbortSignal;
-}) {
+}) => {
   const { lat, lon, units = 'metric', lang = 'kr', exclude, signal } = params;
   return callWeatherApi<OneCallWeatherResponse>(
     '/data/3.0/onecall',
@@ -104,7 +114,7 @@ export async function fetchOneCall(params: {
   );
 }
 
-function buildCandidates(locationName: string): string[] {
+const buildCandidates = (locationName: string): string[] => {
   const tokens = locationName.split(/\s+/);
   const last = tokens[tokens.length - 1];
   const last2 = tokens.length >= 2 ? `${tokens[tokens.length - 2]} ${last}` : '';
@@ -121,7 +131,7 @@ function buildCandidates(locationName: string): string[] {
     .map(s => `${s.trim()},KR`);
 }
 
-export async function getLocation(locationName: string): Promise<GeocodingResult[]> {
+export const getLocation = async (locationName: string): Promise<GeocodeResponse[]> => {
   const name = locationName.trim();
   if (!name) return [];
 
