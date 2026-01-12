@@ -23,7 +23,6 @@ export const useLocationDisplay = (location?: Location | null) => {
   
   const address = location.fullAddress;
 
-  // 상세 지명을 항상 제공하여 위치에 대한 부연 설명을 강화 (사용자 요청 반영: 중복되더라도 표시)
   const showAddress = true;
 
   return {
