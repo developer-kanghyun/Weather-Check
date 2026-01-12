@@ -23,8 +23,8 @@ export const useLocationDisplay = (location?: Location | null) => {
   
   const address = location.fullAddress;
 
-  // 나의 위치, 별명 사용 시 주소를 보여줌
-  const showAddress = isCurrentLocation || (title !== location.displayLabel && title !== location.fullAddress);
+  // 상세 지명을 항상 제공하여 위치에 대한 부연 설명을 강화 (사용자 요청 반영: 중복되더라도 표시)
+  const showAddress = true;
 
   return {
     title,
