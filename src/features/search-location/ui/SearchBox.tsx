@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { Location } from '@/entities/location';
 import { useLocationSearch } from '../model/use-location-search';
 import { SearchResultList } from './SearchResultList';
+import { useClickOutside } from '@/shared/lib/hooks/use-click-outside';
 
 interface SearchBoxProps {
   onSelect: (location: Location) => void;
@@ -15,15 +16,7 @@ export const SearchBox = ({ onSelect, placeholder = '지역을 검색하세요' 
   const [isComposing, setIsComposing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, () => setIsOpen(false), isOpen);
 
   useEffect(() => {
     setActiveIndex(-1);

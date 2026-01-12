@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useFavorites } from '@/features/favorite-manage';
 import { useFavoritesWeather } from '@/features/favorites-weather';
 import { FavoriteEditField } from '@/features/favorite-edit';
 import { type Location, createLocation } from '@/entities/location';
 import { getWeatherStyle } from '@/entities/weather/lib/weather-styles';
+import { useClickOutside } from '@/shared/lib/hooks/use-click-outside';
 
 const formatLocationName = (name: string): string => {
   return name.split(/[\s-]+/).pop() ?? name;
@@ -19,9 +20,15 @@ export const FavoritesSidebar = ({ onSelectLocation, selectedLocationId }: Favor
   const { weatherByLocationId } = useFavoritesWeather(favorites);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useClickOutside(sidebarRef, () => setIsExpanded(false), isExpanded);
 
   return (
-    <aside className={`flex-shrink-0 glass-panel lg:rounded-[2rem] rounded-3xl px-4 lg:p-6 flex flex-col lg:gap-6 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[275px] pb-4' : 'max-h-[60px]'} lg:max-h-full w-full lg:w-80 lg:h-full`}>
+    <aside 
+      ref={sidebarRef}
+      className={`flex-shrink-0 glass-panel lg:rounded-[2rem] rounded-3xl px-4 lg:p-6 flex flex-col lg:gap-6 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[275px] pb-4' : 'max-h-[60px]'} lg:max-h-full w-full lg:w-80 lg:h-full`}
+    >
       <div 
         className="flex items-center justify-center lg:justify-between cursor-pointer lg:cursor-default w-full h-[60px] lg:h-auto flex-shrink-0" 
         onClick={() => setIsExpanded(!isExpanded)}
